@@ -2,7 +2,7 @@
 
 Smooth scrolling to anchors, elements and positions that lands where it should: below fixed headers, centered in strips or at the nearest edge, with easing, interruption, focus, history and a promise for when it arrives. For vanilla JavaScript, any framework and plain HTML.
 
-[Demo](https://samline.github.io/utils/scroll-to/) · [Examples](https://samline.github.io/utils/scroll-to/examples/) · [Documentation](https://samline.github.io/utils/docs/scroll-to/) · [Changelog](CHANGELOG.md)
+[Demo](https://samline.github.io/scroll-to/) · [Examples](https://samline.github.io/scroll-to/examples/) · [Documentation](https://samline.github.io/scroll-to/docs/) · [Changelog](CHANGELOG.md)
 
 ## Table of contents
 
@@ -107,29 +107,29 @@ Scroll the page or any box, and center the selected tab of a horizontal strip wi
 
 ## Documentation
 
-Read the [documentation](https://samline.github.io/utils/docs/scroll-to/) for the full guides and API contracts, and explore [working examples](https://samline.github.io/utils/scroll-to/examples/) with complete and separate source files.
+Read the [documentation](https://samline.github.io/scroll-to/docs/) for the full guides and API contracts, and explore [working examples](https://samline.github.io/scroll-to/examples/) with complete and separate source files.
 
-| Guide                                                                              | What it covers                                                                      |
-| ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| [Installation](https://samline.github.io/utils/docs/scroll-to/getting-started/)    | npm, CDN and the first links.                                                       |
-| [API reference](https://samline.github.io/utils/docs/scroll-to/reference/api/)     | `scrollTo`, `scrollPosition`, `cancelScroll`, `autoScrollTo` and `window.ScrollTo`. |
-| [Options](https://samline.github.io/utils/docs/scroll-to/reference/configuration/) | Options, targets and attributes.                                                    |
-| [Layouts](https://samline.github.io/utils/docs/scroll-to/guides/layouts/)          | Fixed headers, skip links, containers, tabs and history.                            |
-| [Frameworks](https://samline.github.io/utils/docs/scroll-to/guides/frameworks/)    | React, Vue, Svelte, Astro and client-side routers.                                  |
+| Guide                                                                        | What it covers                                                                      |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| [Installation](https://samline.github.io/scroll-to/docs/getting-started/)    | npm, CDN and the first links.                                                       |
+| [API reference](https://samline.github.io/scroll-to/docs/reference/api/)     | `scrollTo`, `scrollPosition`, `cancelScroll`, `autoScrollTo` and `window.ScrollTo`. |
+| [Options](https://samline.github.io/scroll-to/docs/reference/configuration/) | Options, targets and attributes.                                                    |
+| [Layouts](https://samline.github.io/scroll-to/docs/guides/layouts/)          | Fixed headers, skip links, containers, tabs and history.                            |
+| [Frameworks](https://samline.github.io/scroll-to/docs/guides/frameworks/)    | React, Vue, Svelte, Astro and client-side routers.                                  |
 
 ## Changelog
 
-Read [CHANGELOG.md](CHANGELOG.md) or the [published changelog](https://samline.github.io/utils/docs/scroll-to/changelog/) for release history and explicitly marked breaking and behavior changes. Review the notes before upgrading.
+Read [CHANGELOG.md](CHANGELOG.md) or the [published changelog](https://samline.github.io/scroll-to/docs/changelog/) for release history and explicitly marked breaking and behavior changes. Review the notes before upgrading.
 
 ## AI agent skill
 
-The [Scroll To skill](https://samline.github.io/utils/skills/scroll-to/SKILL.md) teaches verified package integration. Its maintained [repository source](site/SKILL.md) and website download are the same file. Verify the installed package version before applying its guidance.
+The [Scroll To skill](https://samline.github.io/scroll-to/skills/scroll-to/SKILL.md) teaches verified package integration. Its maintained [repository source](skills/scroll-to/SKILL.md) and website download are the same file. Verify the installed package version before applying its guidance.
 
-Download [SKILL.md](https://samline.github.io/utils/skills/scroll-to/SKILL.md) into a `scroll-to/` folder in your agent's supported skill directory. For agents that discover project skills from `.agents/skills/`:
+Download [SKILL.md](https://samline.github.io/scroll-to/skills/scroll-to/SKILL.md) into a `scroll-to/` folder in your agent's supported skill directory. For agents that discover project skills from `.agents/skills/`:
 
 ```sh
 mkdir -p .agents/skills/scroll-to
-curl --fail --location https://samline.github.io/utils/skills/scroll-to/SKILL.md \
+curl --fail --location https://samline.github.io/scroll-to/skills/scroll-to/SKILL.md \
   --output .agents/skills/scroll-to/SKILL.md
 ```
 
