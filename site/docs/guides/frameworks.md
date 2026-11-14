@@ -5,7 +5,7 @@ description: Use @samline/scroll-to in React, Vue, Svelte and Astro, and alongsi
 locale: en
 sidebar:
   group: guides
-  order: 3
+  order: 4
 ---
 
 `scrollTo` is a plain function that returns a promise, so it works anywhere. `autoScrollTo` returns `{ destroy }` for your unmount hook.
