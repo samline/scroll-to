@@ -5,10 +5,10 @@ description: Use @samline/scroll-to in React, Vue, Svelte and Astro, and alongsi
 locale: en
 sidebar:
   group: guides
-  order: 4
+  order: 5
 ---
 
-`scrollTo` is a plain function that returns a promise, so it works anywhere. `autoScrollTo` returns `{ destroy }` for your unmount hook.
+`scrollTo` is a plain function that returns a promise, so it works anywhere. `autoScrollTo` and `createScrollTo` return `{ destroy }` for your unmount hook, and a `signal` stops a scroll when the component goes away.
 
 ## React
 
@@ -30,6 +30,36 @@ import { useEffect } from 'react'
 
 export function SmoothAnchors() {
   useEffect(() => autoScrollTo({ offset: '#header' }).destroy, [])
+  return null
+}
+```
+
+Stop a scroll that is still running when the component unmounts, so its callbacks never touch a removed element:
+
+```jsx
+import { scrollTo } from '@samline/scroll-to'
+import { useEffect } from 'react'
+
+export function ScrollToResults({ query }) {
+  useEffect(() => {
+    const controller = new AbortController()
+    scrollTo('#results', { signal: controller.signal })
+    return () => controller.abort()
+  }, [query])
+  return null
+}
+```
+
+Share options across a component tree with one `createScrollTo` instance:
+
+```jsx
+import { createScrollTo } from '@samline/scroll-to'
+import { useEffect } from 'react'
+
+export const scroller = createScrollTo({ offset: '#header', duration: 600 })
+
+export function SmoothAnchors() {
+  useEffect(() => scroller.auto().destroy, [])
   return null
 }
 ```

@@ -21,6 +21,7 @@ export default {
     'guides/examples': 'Examples',
     'guides/frameworks': 'Framework integrations',
     'guides/layouts': 'Layouts and focus',
+    'guides/lifecycle': 'Lifecycle and events',
     index: 'Overview',
     'reference/api': 'API reference',
     'reference/configuration': 'Configuration',

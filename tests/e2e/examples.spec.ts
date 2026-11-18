@@ -70,4 +70,38 @@ test.describe('scroll-to copyable examples', () => {
     await expect(page.locator('#q4')).toHaveClass(/flash/)
     expect(await top(page, '#q4')).toBe(16)
   })
+
+  test('the progress bar fills and the status says why the scroll ended', async ({ page }) => {
+    await openDocument(page, find(scrollToExamples, 'progress'))
+    await page.locator('#give-up').click()
+    await expect(page.locator('#status')).toHaveText('Scrolling…')
+    await expect(page.locator('#status')).toHaveText('Ended: cancelled')
+    const stopped = await page.evaluate(() => scrollY)
+    expect(stopped).toBeGreaterThan(0)
+    expect(stopped).toBeLessThan(
+      await page.evaluate(() => document.documentElement.scrollHeight - innerHeight)
+    )
+
+    await page.locator('#go').click()
+    await expect(page.locator('#status')).toHaveText('Ended: arrived', { timeout: 6000 })
+    await expect(page.locator('#bar')).toHaveAttribute('style', /scaleX\(1\)/)
+    // The last part cannot reach the top: the scroll stops at the end of the page.
+    const end = await page.evaluate(() => [
+      Math.round(scrollY),
+      document.documentElement.scrollHeight - innerHeight,
+    ])
+    expect(end[0]).toBe(end[1])
+  })
+
+  test('links carry the state while they scroll and the log records each end', async ({ page }) => {
+    await openDocument(page, find(scrollToExamples, 'events'))
+    const plans = page.getByRole('link', { name: 'Plans' })
+    await plans.click()
+    await expect(plans).toHaveAttribute('data-scroll-to-state', 'scrolling')
+    await expect(page.locator('html')).toHaveAttribute('data-scroll-to-state', 'scrolling')
+    await expect(page.locator('#log li').first()).toHaveText('plans: arrived')
+    await expect(plans).not.toHaveAttribute('data-scroll-to-state', /.*/)
+    await expect(page.locator('html')).not.toHaveAttribute('data-scroll-to-state', /.*/)
+    await expect(page.locator('#plans')).toBeFocused()
+  })
 })

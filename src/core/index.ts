@@ -1,4 +1,4 @@
-export { ATTRIBUTE, EASINGS } from './scroll-to.js'
+export { ATTRIBUTE, EASINGS, END_REASONS, EVENTS, STATE_ATTRIBUTE } from './scroll-to.js'
 export type {
   Align,
   Easing,
@@ -6,4 +6,9 @@ export type {
   ScrollToOptions,
   AutoScrollToOptions,
   ScrollToController,
+  ScrollDetail,
+  ScrollProgress,
+  ScrollResult,
+  ScrollEndReason,
+  ScrollToInstance,
 } from './scroll-to.js'

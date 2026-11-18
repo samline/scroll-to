@@ -120,4 +120,129 @@ document.querySelector('#show').addEventListener('click', async () => {
 })`,
     },
   },
+  {
+    id: 'progress',
+    tab: 'Follow the scroll',
+    title: 'Show progress and why it ended',
+    description:
+      'createScrollTo shares the duration and the callbacks: onProgress fills the bar, onEnd says why the scroll ended. Use the wheel or touch while it moves to interrupt it, or let an AbortSignal give up after one second.',
+    files: {
+      html: `<div class="toolbar">
+  <button type="button" id="go">Scroll to the end</button>
+  <button type="button" id="give-up">Give up after 1 s</button>
+  <button type="button" id="back">Back to top</button>
+  <output id="status" aria-live="polite">Ready</output>
+  <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+</div>
+<main>
+${Array.from({ length: 8 }, (_, i) => `  <section id="part-${i + 1}"><h2>Part ${i + 1}</h2></section>`).join('\n')}
+</main>`,
+      css: `body { margin: 0; font-family: system-ui, sans-serif; }
+.toolbar { position: fixed; inset: 0 0 auto; z-index: 1; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; padding: 0.75rem 1rem; background: #fff; border-bottom: 1px solid #ddd; }
+.progress { position: absolute; inset: auto 0 0; height: 3px; }
+#bar { display: block; height: 100%; background: #78350f; transform: scaleX(0); transform-origin: left; }
+main { padding: 4rem 1rem 0; }
+section { min-height: 80vh; border-top: 1px solid #ddd; }`,
+      js: `const bar = document.querySelector('#bar')
+const status = document.querySelector('#status')
+
+// Defaults shared by every scroll below, callbacks included.
+const scroller = ScrollTo.createScrollTo({
+  duration: 2500,
+  onStart: () => {
+    status.textContent = 'Scrolling…'
+  },
+  onProgress: ({ eased }) => {
+    bar.style.transform = \`scaleX(\${eased})\`
+  },
+  onEnd: ({ reason }) => {
+    status.textContent = \`Ended: \${reason}\`
+  },
+})
+
+document.querySelector('#go').addEventListener('click', () => scroller.to('#part-8'))
+document
+  .querySelector('#give-up')
+  .addEventListener('click', () => scroller.to('#part-8', { signal: AbortSignal.timeout(1000) }))
+document.querySelector('#back').addEventListener('click', () => scroller.to('top', { duration: 600 }))`,
+      esm: `import { createScrollTo } from '@samline/scroll-to'
+
+const bar = document.querySelector('#bar')
+const status = document.querySelector('#status')
+
+// Defaults shared by every scroll below, callbacks included.
+const scroller = createScrollTo({
+  duration: 2500,
+  onStart: () => {
+    status.textContent = 'Scrolling…'
+  },
+  onProgress: ({ eased }) => {
+    bar.style.transform = \`scaleX(\${eased})\`
+  },
+  onEnd: ({ reason }) => {
+    status.textContent = \`Ended: \${reason}\`
+  },
+})
+
+document.querySelector('#go').addEventListener('click', () => scroller.to('#part-8'))
+document
+  .querySelector('#give-up')
+  .addEventListener('click', () => scroller.to('#part-8', { signal: AbortSignal.timeout(1000) }))
+document.querySelector('#back').addEventListener('click', () => scroller.to('top', { duration: 600 }))`,
+    },
+  },
+  {
+    id: 'events',
+    tab: 'Events and state',
+    title: 'React from HTML and CSS',
+    description:
+      'While a link scrolls, it and the page carry data-scroll-to-state="scrolling", so CSS can style them. Every scroll ends with a bubbling scroll-to:end event: one listener on the document logs where each one went and why it ended.',
+    files: {
+      html: `<header id="header">
+  <nav>
+    <a href="#intro">Intro</a>
+    <a href="#plans">Plans</a>
+    <a href="#contact">Contact</a>
+  </nav>
+  <ol id="log" aria-live="polite"></ol>
+</header>
+<main>
+${sections(['intro', 'plans', 'contact'])}
+</main>`,
+      css: `body { margin: 0; font-family: system-ui, sans-serif; }
+header { position: fixed; inset: 0 0 auto; z-index: 1; display: flex; justify-content: space-between; gap: 1rem; padding: 1rem 1.5rem; background: #fff; border-bottom: 1px solid #ddd; transition: border-color 0.2s; }
+nav { display: flex; gap: 1rem; }
+#log { margin: 0; font-size: 0.875rem; color: #555; }
+main { padding: 5rem 1.5rem 50vh; }
+section { min-height: 80vh; border-top: 1px solid #ddd; }
+section:focus { outline: none; }
+/* While a scroll runs: the page, and the link that started it. */
+html[data-scroll-to-state='scrolling'] header { border-color: #78350f; }
+a[data-scroll-to-state='scrolling'] { color: #78350f; text-decoration-style: wavy; }`,
+      js: `ScrollTo.auto({ offset: '#header', duration: 900 })
+
+const log = document.querySelector('#log')
+
+document.addEventListener('scroll-to:end', event => {
+  const { target, reason } = event.detail
+  const item = document.createElement('li')
+  item.textContent = \`\${target?.id ?? 'top'}: \${reason}\`
+  log.prepend(item)
+  while (log.children.length > 3) log.lastElementChild.remove()
+})`,
+      esm: `import { autoScrollTo } from '@samline/scroll-to'
+
+autoScrollTo({ offset: '#header', duration: 900 })
+
+const log = document.querySelector('#log')
+
+document.addEventListener('scroll-to:end', event => {
+  const { target, reason } = event.detail
+  const item = document.createElement('li')
+  item.textContent = \`\${target?.id ?? 'top'}: \${reason}\`
+  log.prepend(item)
+  while (log.children.length > 3) log.lastElementChild.remove()
+})`,
+    },
+  },
 ]

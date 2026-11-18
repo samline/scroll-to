@@ -1,0 +1,87 @@
+---
+import './_shared.css'
+---
+
+<div class="preview scroll-to-example">
+  <div class="controls">
+    <button type="button" class="pill" data-go>Scroll to the end</button>
+    <button type="button" class="pill" data-give-up>Give up after 1 s</button>
+    <button type="button" class="pill" data-back>Back to top</button>
+    <output aria-live="polite">Ready</output>
+  </div>
+  <div class="progress" aria-hidden="true"><span></span></div>
+  <div class="box" data-preview="progress" tabindex="0" aria-label="Long content">
+    {Array.from({ length: 8 }, (_, i) => (
+      <section id={`scroll-to-part-${i + 1}`}>
+        <p class="part-title">Part {i + 1}</p>
+        <p>Use the wheel or touch here while it moves to interrupt it.</p>
+      </section>
+    ))}
+  </div>
+</div>
+
+<script>
+  import { createScrollTo } from '@samline/scroll-to'
+  import { preview } from '../../shared/lib/preview'
+
+  preview('progress', stage => {
+    const box = stage.querySelector<HTMLElement>('[data-preview="progress"]')!
+    const root = box.closest('.preview')!
+    const bar = root.querySelector<HTMLElement>('.progress span')!
+    const status = root.querySelector('output')!
+    const last = box.querySelector<HTMLElement>('#scroll-to-part-8')!
+
+    // Defaults shared by every scroll below, callbacks included.
+    const scroller = createScrollTo({
+      container: box,
+      duration: 2500,
+      onStart: () => {
+        status.value = 'Scrolling…'
+      },
+      onProgress: ({ eased }) => {
+        bar.style.transform = `scaleX(${eased})`
+      },
+      onEnd: ({ reason }) => {
+        status.value = `Ended: ${reason}`
+      },
+    })
+
+    root.querySelector('[data-go]')!.addEventListener('click', () => scroller.to(last))
+    root
+      .querySelector('[data-give-up]')!
+      .addEventListener('click', () => scroller.to(last, { signal: AbortSignal.timeout(1000) }))
+    root
+      .querySelector('[data-back]')!
+      .addEventListener('click', () => scroller.to('top', { duration: 600 }))
+
+    return () => {
+      // Stops a running scroll, so its callbacks never touch the old markup.
+      scroller.destroy()
+      bar.style.transform = ''
+    }
+  })
+</script>
+
+<style>
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    align-items: center;
+    font-size: 0.875rem;
+    color: var(--color-text-subtle);
+  }
+  .progress {
+    height: 0.1875rem;
+    overflow: hidden;
+    border-radius: 999rem;
+    background: var(--color-border);
+  }
+  .progress span {
+    display: block;
+    height: 100%;
+    background: var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+</style>

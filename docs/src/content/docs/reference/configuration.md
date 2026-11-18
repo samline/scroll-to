@@ -1,7 +1,7 @@
 ---
 title: 'Configuration options'
 titleAccent: 'options'
-description: Every @samline/scroll-to option and data-scroll-to attribute, with defaults and how targets, offsets and alignment are read.
+description: 'Every @samline/scroll-to option, callback and data-scroll-to attribute, with defaults, the state attribute and the events.'
 locale: en
 sidebar:
   group: reference
@@ -25,6 +25,10 @@ sidebar:
 | `interruptible` | `true`                                | Stop when the visitor scrolls with the wheel, touches, clicks or presses a key                                                                                       |
 | `focus`         | `false` (`true` for `autoScrollTo`)   | Move keyboard focus to the target on arrival. Targets that cannot take focus get `tabindex="-1"`.                                                                    |
 | `hash`          | `false` (`'push'` for `autoScrollTo`) | Write the target's `#id` to the URL on arrival: `'push'` adds a history entry, `'replace'` does not                                                                  |
+| `signal`        | none                                  | An `AbortSignal`. Aborting it stops the scroll (`reason: 'cancelled'`); an aborted signal does not start one                                                         |
+| `onStart`       | none                                  | `(detail) => void`, once before the first frame, with `{ target, container, trigger, top, left }`                                                                    |
+| `onProgress`    | none                                  | `(detail) => void`, on every frame, with the same plus `progress` (time) and `eased` (distance), from `0` to `1`                                                     |
+| `onEnd`         | none                                  | `(result) => void`, once when it ends, with the same plus `arrived` and `reason`: `arrived`, `interrupted`, `replaced`, `cancelled` or `missing`                     |
 
 `autoScrollTo` also takes:
 
@@ -56,5 +60,17 @@ Set them on a trigger. They win over the options given to `autoScrollTo`.
 | `data-scroll-to-block`     | `start`, `center`, `end`, `nearest` | `block`                                          |
 | `data-scroll-to-inline`    | `start`, `center`, `end`, `nearest` | `inline`                                         |
 | `data-scroll-to-duration`  | milliseconds                        | `duration`                                       |
+
+## State and events
+
+| Name                               | Where                                                                  | When                  |
+| ---------------------------------- | ---------------------------------------------------------------------- | --------------------- |
+| `data-scroll-to-state="scrolling"` | The scrolling element (`<html>` for the page) and the clicked trigger  | While the scroll runs |
+| `scroll-to:start`                  | The target, or the scrolling element for positions                     | When it starts        |
+| `scroll-to:end`                    | The target, or the scrolling element for positions and missing targets | When it ends, once    |
+
+The events bubble and carry the same details as the callbacks. [Lifecycle and events](../../guides/lifecycle/) shows how to use them.
+
+## Clicks
 
 Clicks with a modifier key or a middle button, and clicks whose default another script already prevented, are left alone. Links to other pages and to ids that do not exist keep their normal behavior.

@@ -1,0 +1,83 @@
+---
+import './_shared.css'
+
+const parts = ['Intro', 'Plans', 'Contact']
+---
+
+<div class="preview scroll-to-example">
+  <div class="box" data-preview="events" tabindex="0" aria-label="Scrollable page">
+    <nav class="bar" aria-label="Events example sections">
+      {parts.map(part => <a href={`#scroll-to-events-${part.toLowerCase()}`}>{part}</a>)}
+    </nav>
+    {parts.map(part => (
+      <section id={`scroll-to-events-${part.toLowerCase()}`}>
+        <p class="part-title">{part}</p>
+        <p>While it scrolls, the link and the box carry data-scroll-to-state.</p>
+      </section>
+    ))}
+  </div>
+  <div class="log">
+    <p>scroll-to:end</p>
+    <ol aria-live="polite"></ol>
+  </div>
+</div>
+
+<script>
+  import { autoScrollTo, type ScrollResult } from '@samline/scroll-to'
+  import { preview } from '../../shared/lib/preview'
+
+  preview('events', stage => {
+    const box = stage.querySelector<HTMLElement>('[data-preview="events"]')!
+    const log = box.closest('.preview')!.querySelector('ol')!
+
+    const controller = autoScrollTo({
+      scope: box,
+      container: box,
+      offset: box.querySelector('.bar')!,
+      duration: 900,
+      hash: false,
+      initialHash: false,
+    })
+
+    // The events bubble from the target, so one listener hears every scroll in the box.
+    const onEnd = (event: Event) => {
+      const { target, reason } = (event as CustomEvent<ScrollResult>).detail
+      const item = document.createElement('li')
+      item.textContent = `${target?.id.replace('scroll-to-events-', '') || 'top'}: ${reason}`
+      log.prepend(item)
+      while (log.children.length > 3) log.lastElementChild!.remove()
+    }
+    box.addEventListener('scroll-to:end', onEnd)
+
+    return () => {
+      controller.destroy()
+      box.removeEventListener('scroll-to:end', onEnd)
+    }
+  })
+</script>
+
+<style>
+  /* While a scroll runs: the box, and the link that started it. */
+  .box[data-scroll-to-state='scrolling'] {
+    border-color: var(--color-accent);
+  }
+  .bar a[data-scroll-to-state='scrolling'] {
+    color: var(--color-accent);
+    text-decoration-style: wavy;
+  }
+  .log {
+    display: grid;
+    gap: 0.25rem;
+    font-size: 0.875rem;
+  }
+  .log p {
+    font-family: var(--font-mono, monospace);
+    color: var(--color-text-subtle);
+  }
+  .log ol {
+    min-height: 3.75rem;
+    margin: 0;
+    padding-left: 1.25rem;
+    color: var(--color-text);
+  }
+</style>

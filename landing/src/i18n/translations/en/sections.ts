@@ -85,7 +85,7 @@ const sections = {
         icon: 'bell',
         title: 'Know when it arrives',
         description: text(
-          'Every scroll returns a promise: true when it arrives, false when interrupted, ready for highlights and analytics.'
+          'A promise, callbacks for every frame and events that bubble, with the reason it ended: arrived, interrupted or cancelled.'
         ),
       },
     },
@@ -98,7 +98,7 @@ const sections = {
       main: {
         label: 'Package',
         entrypoint: project.npmName,
-        description: 'scrollTo, scrollPosition and autoScrollTo as ESM or CommonJS.',
+        description: 'scrollTo, autoScrollTo, createScrollTo and more, as ESM or CommonJS.',
       },
       vanilla: {
         label: 'One scroll',

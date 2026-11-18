@@ -11,15 +11,21 @@ import {
   type ScrollToOptions,
   type AutoScrollToOptions,
   type ScrollToController,
+  type ScrollToInstance,
+  type ScrollDetail,
+  type ScrollEndReason,
+  type ScrollResult,
   ATTRIBUTE,
   EASINGS,
+  EVENTS,
   INTERRUPTIONS,
+  STATE_ATTRIBUTE,
   align,
   clamp,
 } from '../core/scroll-to.js'
 
 interface Running {
-  cancel: () => void
+  cancel: (reason: ScrollEndReason) => void
 }
 const running = new WeakMap<object, Running>()
 
@@ -144,28 +150,55 @@ const writeHash = (target: Element | number | null, mode: ScrollToOptions['hash'
   history[mode === 'push' ? 'pushState' : 'replaceState'](history.state, '', url)
 }
 
-/**
- * Smoothly scroll the page (or `container`) to `target`: an element, a
- * selector, an `#id`, `'top'` or a vertical position in pixels.
- *
- * The destination is measured again on every frame, so content that loads
- * on the way (images, fonts) does not make it land in the wrong place. A new
- * call on the same container replaces the running one. Resolves to `true`
- * when it arrives and `false` when it is interrupted, replaced or the target
- * does not exist.
- */
-export const scrollTo = (target: ScrollTarget, options: ScrollToOptions = {}): Promise<boolean> => {
+/** The element that represents the container in the DOM: the root for the page. */
+const hostOf = (container: Element | Window): Element =>
+  container === window ? document.documentElement : (container as Element)
+
+const run = (
+  target: ScrollTarget,
+  options: ScrollToOptions,
+  trigger: Element | null,
+  owner?: AbortSignal
+): Promise<boolean> => {
   if (!isBrowser()) return Promise.resolve(false)
   const container = resolveContainer(options.container)
   const resolved = resolveTarget(target)
+  const element = resolved instanceof Element ? resolved : null
+  const host = hostOf(container)
+  const signals = [options.signal, owner].filter((signal): signal is AbortSignal => !!signal)
+
+  const detail = (): ScrollDetail => {
+    const view = viewport(container)
+    return { target: element, container, trigger, top: view.y, left: view.x }
+  }
+  const emit = (type: string, value: ScrollDetail) =>
+    (element ?? host).dispatchEvent(new CustomEvent(type, { bubbles: true, detail: value }))
+  const end = (reason: ScrollEndReason): boolean => {
+    const result: ScrollResult = { ...detail(), arrived: reason === 'arrived', reason }
+    options.onEnd?.(result)
+    emit(EVENTS.end, result)
+    return result.arrived
+  }
+
   const first = scrollPosition(target, options)
-  if (!first) return Promise.resolve(false)
+  if (!first) return Promise.resolve(end('missing'))
+  if (signals.some(signal => signal.aborted)) return Promise.resolve(end('cancelled'))
 
-  running.get(container)?.cancel()
+  running.get(container)?.cancel('replaced')
 
-  const finish = () => {
-    if (options.focus) moveFocus(resolved)
-    writeHash(resolved, options.hash)
+  const marked = trigger ? [host, trigger] : [host]
+  const begin = () => {
+    for (const node of marked) node.setAttribute(STATE_ATTRIBUTE, 'scrolling')
+    const value = detail()
+    options.onStart?.(value)
+    emit(EVENTS.start, value)
+  }
+  const finish = (arrived: boolean) => {
+    if (arrived) {
+      if (options.focus) moveFocus(resolved)
+      writeHash(resolved, options.hash)
+    }
+    for (const node of marked) node.removeAttribute(STATE_ATTRIBUTE)
   }
 
   const start = viewport(container)
@@ -178,9 +211,11 @@ export const scrollTo = (target: ScrollTarget, options: ScrollToOptions = {}): P
     options.behavior === 'instant' || prefersReducedMotion() || duration === 0 || distance < 1
 
   if (instant) {
+    begin()
     setScroll(container, first.top, first.left)
-    finish()
-    return Promise.resolve(true)
+    options.onProgress?.({ ...detail(), progress: 1, eased: 1 })
+    finish(true)
+    return Promise.resolve(end('arrived'))
   }
 
   const easing =
@@ -191,27 +226,31 @@ export const scrollTo = (target: ScrollTarget, options: ScrollToOptions = {}): P
 
   return new Promise<boolean>(resolve => {
     let frame = 0
-    let begin: number | null = null
+    let begun: number | null = null
 
-    const stop = (arrived: boolean) => {
+    const stop = (reason: ScrollEndReason) => {
       cancelAnimationFrame(frame)
       if (running.get(container) === entry) running.delete(container)
       if (interruptible) {
         for (const type of INTERRUPTIONS) window.removeEventListener(type, interrupt)
       }
-      if (arrived) finish()
-      resolve(arrived)
+      for (const signal of signals) signal.removeEventListener('abort', abort)
+      finish(reason === 'arrived')
+      resolve(end(reason))
     }
-    const interrupt = () => stop(false)
-    const entry: Running = { cancel: interrupt }
+    const interrupt = () => stop('interrupted')
+    const abort = () => stop('cancelled')
+    const entry: Running = { cancel: stop }
     running.set(container, entry)
     if (interruptible) {
       for (const type of INTERRUPTIONS) window.addEventListener(type, interrupt, { passive: true })
     }
+    for (const signal of signals) signal.addEventListener('abort', abort, { once: true })
+    begin()
 
     const step = (now: number) => {
-      begin ??= now
-      const progress = duration ? Math.min(1, (now - begin) / duration) : 1
+      begun ??= now
+      const progress = duration ? Math.min(1, (now - begun) / duration) : 1
       // Measure again: the target may have moved while content loaded.
       const goal = scrollPosition(target, options) ?? first
       const eased = easing(progress)
@@ -220,18 +259,36 @@ export const scrollTo = (target: ScrollTarget, options: ScrollToOptions = {}): P
         start.y + (goal.top - start.y) * eased,
         start.x + (goal.left - start.x) * eased
       )
+      options.onProgress?.({ ...detail(), progress, eased })
       if (progress < 1) frame = requestAnimationFrame(step)
-      else stop(true)
+      else stop('arrived')
     }
     frame = requestAnimationFrame(step)
   })
 }
 
+/**
+ * Smoothly scroll the page (or `container`) to `target`: an element, a
+ * selector, an `#id`, `'top'` or a vertical position in pixels.
+ *
+ * The destination is measured again on every frame, so content that loads
+ * on the way (images, fonts) does not make it land in the wrong place. A new
+ * call on the same container replaces the running one. Resolves to `true`
+ * when it arrives and `false` when it is interrupted, replaced, cancelled or
+ * the target does not exist; `onEnd` and the `scroll-to:end` event say which.
+ */
+export const scrollTo = (target: ScrollTarget, options: ScrollToOptions = {}): Promise<boolean> =>
+  run(target, options, null)
+
 /** Stop the scroll running on `container` (the page by default). */
 export const cancelScroll = (container?: ScrollToOptions['container']): void => {
   if (!isBrowser()) return
-  running.get(resolveContainer(container))?.cancel()
+  running.get(resolveContainer(container))?.cancel('cancelled')
 }
+
+/** Whether a scroll is running on `container` (the page by default). */
+export const isScrolling = (container?: ScrollToOptions['container']): boolean =>
+  isBrowser() && running.has(resolveContainer(container))
 
 /** The target of a trigger: its `data-scroll-to` value, or a same-page link's hash. */
 const triggerTarget = (trigger: Element): string | null => {
@@ -291,7 +348,7 @@ export const autoScrollTo = ({
     const target = triggerTarget(trigger)
     if (!target || resolveTarget(target) === null) return
     event.preventDefault()
-    void scrollTo(target, triggerOptions(trigger, base))
+    void run(target, triggerOptions(trigger, base), trigger)
   }
 
   root.addEventListener('click', onClick)
@@ -310,6 +367,44 @@ export const autoScrollTo = ({
     destroy: () => {
       root.removeEventListener('click', onClick)
       window.removeEventListener('load', alignHash)
+    },
+  }
+}
+
+/**
+ * A scroller with shared defaults, so options such as `offset` or
+ * `container` are written once. Options passed to each call replace the
+ * defaults key by key. `destroy()` stops the scrolls this instance started
+ * and every controller made with `auto()`; afterwards its calls do nothing.
+ */
+export const createScrollTo = (defaults: ScrollToOptions = {}): ScrollToInstance => {
+  const owner = isBrowser() ? new AbortController() : null
+  const controllers = new Set<ScrollToController>()
+  const merge = <T extends ScrollToOptions>(options?: T): T => ({ ...defaults, ...options }) as T
+  const alive = () => !!owner && !owner.signal.aborted
+
+  return {
+    to: (target, options) =>
+      alive() ? run(target, merge(options), null, owner!.signal) : Promise.resolve(false),
+    position: (target, options) => (alive() ? scrollPosition(target, merge(options)) : null),
+    cancel: () => cancelScroll(defaults.container),
+    isScrolling: () => isScrolling(defaults.container),
+    auto: options => {
+      if (!alive()) return { destroy: () => {} }
+      const controller = autoScrollTo(merge(options))
+      controllers.add(controller)
+      return {
+        destroy: () => {
+          controllers.delete(controller)
+          controller.destroy()
+        },
+      }
+    },
+    destroy: () => {
+      if (!alive()) return
+      owner!.abort()
+      for (const controller of controllers) controller.destroy()
+      controllers.clear()
     },
   }
 }

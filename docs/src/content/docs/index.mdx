@@ -25,8 +25,9 @@ import { href } from '../../lib/routes'
 3. The scroll is animated with `duration` and `easing`. The destination is measured again on every frame, so images that load on the way do not make it land in the wrong place.
 4. A wheel, touch, key press or a new scroll on the same container stops it. Reduced motion jumps instead.
 5. On arrival, links move keyboard focus to the target and push its `#id` to the URL, like a native jump.
+6. It ends exactly once, with a reason: `arrived`, `interrupted`, `replaced`, `cancelled` or `missing`.
 
-`scrollTo()` returns a promise of `true` when it arrives and `false` when it was interrupted, replaced or the target does not exist.
+`scrollTo()` returns a promise of `true` when it arrives and `false` otherwise. `onStart`, `onProgress` and `onEnd`, the `scroll-to:start` and `scroll-to:end` events and the `data-scroll-to-state` attribute follow it while it runs.
 
 ## Pieces
 
@@ -40,6 +41,10 @@ import { href } from '../../lib/routes'
 | Speed and feel           | `duration` and `easing`                                   |
 | From code                | `await scrollTo(target, options)`                         |
 | Measure only             | `scrollPosition(target, options)`                         |
+| Follow it                | `onStart`, `onProgress`, `onEnd`, or `scroll-to:*` events |
+| Style it while it runs   | `[data-scroll-to-state='scrolling']`                      |
+| Stop it from anywhere    | `signal` (an `AbortSignal`) or `cancelScroll()`           |
+| Share options            | `createScrollTo(defaults)`                                |
 
 ## Choose your next step
 
@@ -72,6 +77,12 @@ Options and attributes.
 <LinkCard href={href('guides/layouts')} title="Layouts and focus">
 
 Fixed headers, skip links, containers, tabs and history.
+
+</LinkCard>
+
+<LinkCard href={href('guides/lifecycle')} title="Lifecycle and events">
+
+Callbacks, end reasons, events, the state attribute, AbortSignal and createScrollTo.
 
 </LinkCard>
 

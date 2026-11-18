@@ -37,6 +37,67 @@ export interface ScrollToOptions {
   focus?: boolean
   /** Put the target's `#id` in the URL: `'push'`, `'replace'` or `false`. Defaults to `false`. */
   hash?: 'push' | 'replace' | false
+  /** Stop the scroll when this signal aborts. The end reason is `'cancelled'`. */
+  signal?: AbortSignal
+  /** Called once the scroll starts, before the first frame. */
+  onStart?: (detail: ScrollDetail) => void
+  /** Called on every frame with how far along the scroll is. */
+  onProgress?: (detail: ScrollProgress) => void
+  /** Called once when the scroll ends, for any reason. */
+  onEnd?: (result: ScrollResult) => void
+}
+
+/** Why a scroll ended. */
+export const END_REASONS = ['arrived', 'interrupted', 'replaced', 'cancelled', 'missing'] as const
+export type ScrollEndReason = (typeof END_REASONS)[number]
+
+/** What a scroll is doing: passed to `onStart` and in the `scroll-to:start` event. */
+export interface ScrollDetail {
+  /** The resolved target element, or `null` for positions and `'top'`. */
+  target: Element | null
+  /** What scrolls: the page (`window`) or an element. */
+  container: Element | Window
+  /** The trigger that was clicked, when `autoScrollTo` started it. */
+  trigger: Element | null
+  /** Current vertical scroll position in pixels. */
+  top: number
+  /** Current horizontal scroll position in pixels. */
+  left: number
+}
+
+/** Passed to `onProgress` on every frame. */
+export interface ScrollProgress extends ScrollDetail {
+  /** Time elapsed, from `0` to `1`. */
+  progress: number
+  /** Distance covered, from `0` to `1`, after easing. */
+  eased: number
+}
+
+/** Passed to `onEnd` and in the `scroll-to:end` event. */
+export interface ScrollResult extends ScrollDetail {
+  /** `true` only when the reason is `'arrived'`. */
+  arrived: boolean
+  /** Why it ended. */
+  reason: ScrollEndReason
+}
+
+/** A scroller with shared defaults, from `createScrollTo`. */
+export interface ScrollToInstance {
+  /** `scrollTo` with the defaults. */
+  to: (target: ScrollTarget, options?: ScrollToOptions) => Promise<boolean>
+  /** `scrollPosition` with the defaults. */
+  position: (
+    target: ScrollTarget,
+    options?: ScrollToOptions
+  ) => { top: number; left: number } | null
+  /** Stop the scroll running on the default container. */
+  cancel: () => void
+  /** Whether the default container is scrolling. */
+  isScrolling: () => boolean
+  /** `autoScrollTo` with the defaults; destroyed together with this instance. */
+  auto: (options?: AutoScrollToOptions) => ScrollToController
+  /** Stop the running scroll and every `auto` controller. Later calls do nothing. */
+  destroy: () => void
 }
 
 export interface AutoScrollToOptions extends ScrollToOptions {
@@ -54,6 +115,10 @@ export interface ScrollToController {
 }
 
 export const ATTRIBUTE = 'data-scroll-to'
+/** Set to `'scrolling'` on the trigger and the scrolling element while a scroll runs. */
+export const STATE_ATTRIBUTE = 'data-scroll-to-state'
+/** Bubbling events dispatched on the target (or the scrolling element). */
+export const EVENTS = { start: 'scroll-to:start', end: 'scroll-to:end' } as const
 
 export const EASINGS = {
   linear: (t: number) => t,

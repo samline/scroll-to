@@ -57,13 +57,23 @@ import { scrollTo } from '@samline/scroll-to'
 const arrived = await scrollTo('#faq', { offset: '#header', duration: 600 })
 ```
 
+Follow it while it runs:
+
+```js
+scrollTo('#faq', {
+  offset: '#header',
+  onProgress: ({ eased }) => bar.style.setProperty('--progress', eased),
+  onEnd: ({ reason }) => console.log(reason), // 'arrived', 'interrupted', …
+})
+```
+
 ## HTML / CDN
 
 For Shopify, WordPress or plain HTML pages without a build step, load the browser bundle. It handles same-page `#id` links and `[data-scroll-to]` as soon as the DOM is ready. Pin the version in production.
 
 ```html
 <script
-  src="https://cdn.jsdelivr.net/npm/@samline/scroll-to@1.0.1/dist/browser/scroll-to.global.js"
+  src="https://cdn.jsdelivr.net/npm/@samline/scroll-to@1.1.0/dist/browser/scroll-to.global.js"
   defer
 ></script>
 ```
@@ -84,6 +94,14 @@ Links move keyboard focus to their target on arrival and push the `#id` to the U
 
 A wheel, a touch or a key press stops the scroll at once, and a new scroll replaces the running one. Every scroll returns a promise of `true` (arrived) or `false` (interrupted).
 
+### Follow every step
+
+`onStart`, `onProgress` and `onEnd` follow a scroll from its first frame to its end, and `onEnd` says why it ended: `arrived`, `interrupted`, `replaced`, `cancelled` or `missing`. The same moments bubble as `scroll-to:start` and `scroll-to:end` events, and `data-scroll-to-state="scrolling"` marks the trigger and the scrolling element while it runs, so plain HTML and CSS can react too. Stop a scroll from anywhere with an `AbortSignal`.
+
+### Write the defaults once
+
+`createScrollTo({ offset: '#header' })` returns a scroller with shared options for every call, its own `auto()` for links, and one `destroy()` that stops what it started.
+
 ### Any container
 
 Scroll the page or any box, and center the selected tab of a horizontal strip without moving the page. Triggers can carry their own offset, container, alignment and duration as attributes.
@@ -96,6 +114,11 @@ Scroll the page or any box, and center the selected tab of a horizontal strip wi
 | `scrollTo(target, options?)`       | Scroll to an element, `#id`, selector, `'top'` or position. Resolves `true` on arrival. |
 | `scrollPosition(target, options?)` | Where it would scroll, without moving.                                                  |
 | `cancelScroll(container?)`         | Stop the running scroll.                                                                |
+| `isScrolling(container?)`          | Whether a scroll is running.                                                            |
+| `createScrollTo(defaults?)`        | A scroller with shared options: `{ to, position, cancel, isScrolling, auto, destroy }`. |
+| `onStart`, `onProgress`, `onEnd`   | Options that follow a scroll; `onEnd` gets `{ arrived, reason, top, left, target }`.    |
+| `signal`                           | An `AbortSignal` that stops the scroll.                                                 |
+| `scroll-to:start`, `scroll-to:end` | Bubbling events on the target, with the same details as the callbacks.                  |
 
 ### Entrypoints
 
@@ -109,13 +132,14 @@ Scroll the page or any box, and center the selected tab of a horizontal strip wi
 
 Read the [documentation](https://samline.github.io/scroll-to/docs/) for the full guides and API contracts, and explore [working examples](https://samline.github.io/scroll-to/examples/) with complete and separate source files.
 
-| Guide                                                                        | What it covers                                                                      |
-| ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| [Installation](https://samline.github.io/scroll-to/docs/getting-started/)    | npm, CDN and the first links.                                                       |
-| [API reference](https://samline.github.io/scroll-to/docs/reference/api/)     | `scrollTo`, `scrollPosition`, `cancelScroll`, `autoScrollTo` and `window.ScrollTo`. |
-| [Options](https://samline.github.io/scroll-to/docs/reference/configuration/) | Options, targets and attributes.                                                    |
-| [Layouts](https://samline.github.io/scroll-to/docs/guides/layouts/)          | Fixed headers, skip links, containers, tabs and history.                            |
-| [Frameworks](https://samline.github.io/scroll-to/docs/guides/frameworks/)    | React, Vue, Svelte, Astro and client-side routers.                                  |
+| Guide                                                                        | What it covers                                                                           |
+| ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| [Installation](https://samline.github.io/scroll-to/docs/getting-started/)    | npm, CDN and the first links.                                                            |
+| [API reference](https://samline.github.io/scroll-to/docs/reference/api/)     | Every function, `createScrollTo`, the events, the types and `window.ScrollTo`.           |
+| [Options](https://samline.github.io/scroll-to/docs/reference/configuration/) | Options, targets and attributes.                                                         |
+| [Layouts](https://samline.github.io/scroll-to/docs/guides/layouts/)          | Fixed headers, skip links, containers, tabs and history.                                 |
+| [Lifecycle](https://samline.github.io/scroll-to/docs/guides/lifecycle/)      | Callbacks, end reasons, events, the state attribute, `AbortSignal` and `createScrollTo`. |
+| [Frameworks](https://samline.github.io/scroll-to/docs/guides/frameworks/)    | React, Vue, Svelte, Astro and client-side routers.                                       |
 
 ## Changelog
 

@@ -1,4 +1,11 @@
-import { autoScrollTo, cancelScroll, scrollPosition, scrollTo } from '../vanilla/index.js'
+import {
+  autoScrollTo,
+  cancelScroll,
+  createScrollTo,
+  isScrolling,
+  scrollPosition,
+  scrollTo,
+} from '../vanilla/index.js'
 import type { ScrollToController } from '../vanilla/index.js'
 
 /**
@@ -17,7 +24,9 @@ const api = {
   scrollTo,
   scrollPosition,
   cancelScroll,
+  isScrolling,
   autoScrollTo,
+  createScrollTo,
   /** Start (or restart) handling clicks. Returns the controller. */
   auto: (options?: Parameters<typeof autoScrollTo>[0]) => {
     controller?.destroy()
@@ -44,4 +53,4 @@ if (!manual && typeof document !== 'undefined') {
   }
 }
 
-export { autoScrollTo, cancelScroll, scrollPosition, scrollTo }
+export { autoScrollTo, cancelScroll, createScrollTo, isScrolling, scrollPosition, scrollTo }

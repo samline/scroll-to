@@ -97,3 +97,66 @@ test('reduced motion jumps at once', async ({ load, page }) => {
   expect(arrived).toBe(true)
   expect(await top(page, 'three')).toBe(0)
 })
+
+test('callbacks, events and the state attribute follow a real scroll', async ({ load, page }) => {
+  await load(layout, 'scroll-to')
+  const report = await page.evaluate(async () => {
+    const { ScrollTo } = window as any
+    const log: string[] = []
+    let frames = 0
+    let lastProgress = 0
+    let duringState: string | null = null
+    document.addEventListener('scroll-to:start', () => log.push('event:start'))
+    document.addEventListener('scroll-to:end', (event: any) =>
+      log.push(`event:end:${event.detail.reason}`)
+    )
+    const arrived = await ScrollTo.scrollTo('#three', {
+      duration: 400,
+      onStart: () => log.push('start'),
+      onProgress: ({ progress }: { progress: number }) => {
+        frames++
+        lastProgress = progress
+        duringState ??= document.documentElement.getAttribute('data-scroll-to-state')
+      },
+      onEnd: ({ reason }: { reason: string }) => log.push(`end:${reason}`),
+    })
+    return {
+      arrived,
+      log,
+      frames,
+      lastProgress,
+      duringState,
+      after: document.documentElement.getAttribute('data-scroll-to-state'),
+      scrolling: ScrollTo.isScrolling(),
+    }
+  })
+  expect(report).toMatchObject({
+    arrived: true,
+    log: ['start', 'event:start', 'end:arrived', 'event:end:arrived'],
+    lastProgress: 1,
+    duringState: 'scrolling',
+    after: null,
+    scrolling: false,
+  })
+  expect(report.frames).toBeGreaterThan(5)
+  expect(await top(page, 'three')).toBe(0)
+})
+
+test('an AbortSignal stops the scroll', async ({ load, page }) => {
+  await load(layout, 'scroll-to')
+  const result = await page.evaluate(async () => {
+    const abort = new AbortController()
+    let reason = ''
+    const done = (window as any).ScrollTo.scrollTo('#three', {
+      duration: 1500,
+      signal: abort.signal,
+      onEnd: (end: { reason: string }) => (reason = end.reason),
+    })
+    setTimeout(() => abort.abort(), 150)
+    return { arrived: await done, reason, y: scrollY }
+  })
+  expect(result.arrived).toBe(false)
+  expect(result.reason).toBe('cancelled')
+  expect(result.y).toBeGreaterThan(0)
+  expect(result.y).toBeLessThan(1700)
+})
