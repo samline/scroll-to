@@ -23,14 +23,17 @@ const parts = ['Features', 'Pricing', 'FAQ']
 
 <script>
   import { autoScrollTo } from '@samline/scroll-to'
+  import { preview } from '../../shared/lib/preview'
 
-  const box = document.querySelector<HTMLElement>('[data-preview="header"]')!
-  // Scroll this box instead of the page, and leave the URL alone.
-  autoScrollTo({
-    scope: box,
-    container: box,
-    offset: box.querySelector('.bar')!,
-    hash: false,
-    initialHash: false,
+  preview('header', stage => {
+    const box = stage.querySelector<HTMLElement>('[data-preview="header"]')!
+    // Scroll this box instead of the page, and leave the URL alone.
+    return autoScrollTo({
+      scope: box,
+      container: box,
+      offset: box.querySelector('.bar')!,
+      hash: false,
+      initialHash: false,
+    })
   })
 </script>

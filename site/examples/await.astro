@@ -18,19 +18,28 @@ import './_shared.css'
 </div>
 
 <script>
-  import { scrollTo } from '@samline/scroll-to'
+  import { cancelScroll, scrollTo } from '@samline/scroll-to'
+  import { preview } from '../../shared/lib/preview'
 
-  const box = document.querySelector<HTMLElement>('[data-preview="await"]')!
-  const preview = box.closest('.preview')!
-  const status = preview.querySelector('output')!
-  preview.querySelector('[data-show]')!.addEventListener('click', async () => {
-    const answer = box.querySelector<HTMLElement>('#scroll-to-q4')!
-    status.value = 'Scrolling…'
-    const arrived = await scrollTo(answer, { container: box, duration: 900 })
-    status.value = arrived ? 'Arrived' : 'Interrupted'
-    if (!arrived) return
-    answer.classList.add('flash')
-    setTimeout(() => answer.classList.remove('flash'), 1200)
+  preview('await', stage => {
+    const box = stage.querySelector<HTMLElement>('[data-preview="await"]')!
+    const root = box.closest('.preview')!
+    const status = root.querySelector('output')!
+    let flash: ReturnType<typeof setTimeout> | undefined
+    root.querySelector('[data-show]')!.addEventListener('click', async () => {
+      const answer = box.querySelector<HTMLElement>('#scroll-to-q4')!
+      status.value = 'Scrolling…'
+      const arrived = await scrollTo(answer, { container: box, duration: 900 })
+      if (!box.isConnected) return
+      status.value = arrived ? 'Arrived' : 'Interrupted'
+      if (!arrived) return
+      answer.classList.add('flash')
+      flash = setTimeout(() => answer.classList.remove('flash'), 1200)
+    })
+    return () => {
+      cancelScroll(box)
+      clearTimeout(flash)
+    }
   })
 </script>
 

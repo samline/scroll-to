@@ -2,7 +2,11 @@
 
 All notable changes to this package. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow [semver](https://semver.org/).
 
-## Unreleased
+## [1.0.1] - 2026-11-17
+
+### Fixed
+
+- `data-scroll-to-block` and `data-scroll-to-inline` ignore unknown values (a typo such as `"centre"`) and keep the option or default alignment, instead of falling back to `nearest`.
 
 ### Changed
 

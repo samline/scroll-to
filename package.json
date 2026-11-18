@@ -1,6 +1,6 @@
 {
   "name": "@samline/scroll-to",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Smooth scrolling to elements, anchors and positions with offsets for fixed headers, alignment, durations, easing, focus and URL hash handling, for vanilla JavaScript, any framework and plain HTML.",
   "keywords": [
     "scroll-to",

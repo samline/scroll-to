@@ -314,6 +314,19 @@ describe('autoScrollTo', () => {
     expect(scrollLeft()).toBe(600)
   })
 
+  it('ignores an unknown alignment and keeps the option', () => {
+    const { box, items, scrollLeft } = strip()
+    box.id = 'tabs'
+    items[4]!.id = 'tab-5'
+    document.body.insertAdjacentHTML(
+      'beforeend',
+      '<button id="go" data-scroll-to="#tab-5" data-scroll-to-container="#tabs" data-scroll-to-inline="centre">5</button>'
+    )
+    auto({ behavior: 'instant', focus: false, inline: 'center' })
+    click(document.getElementById('go')!)
+    expect(scrollLeft()).toBe(600)
+  })
+
   it('leaves other clicks alone', () => {
     page(sections)
     document.body.insertAdjacentHTML(

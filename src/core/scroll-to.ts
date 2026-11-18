@@ -1,6 +1,13 @@
-import { isBrowser, prefersReducedMotion, readNumber, readString } from '@samline/internal'
+import {
+  isBrowser,
+  prefersReducedMotion,
+  readEnum,
+  readNumber,
+  readString,
+} from '@samline/internal'
 
-export type Align = 'start' | 'center' | 'end' | 'nearest'
+const ALIGNS = ['start', 'center', 'end', 'nearest'] as const
+export type Align = (typeof ALIGNS)[number]
 export type Easing = (progress: number) => number
 export type ScrollTarget = Element | string | number
 
@@ -157,10 +164,10 @@ const align = (
 const clamp = (value: number, max: number) => Math.min(Math.max(0, max), Math.max(0, value))
 
 /** Where the container must scroll to show `target` as asked. */
-export function scrollPosition(
+export const scrollPosition = (
   target: ScrollTarget,
   options: Omit<ScrollToOptions, 'duration' | 'easing' | 'behavior'> = {}
-): { top: number; left: number } | null {
+): { top: number; left: number } | null => {
   if (!isBrowser()) return null
   const container = resolveContainer(options.container)
   const resolved = resolveTarget(target)
@@ -219,7 +226,7 @@ const writeHash = (target: Element | number | null, mode: ScrollToOptions['hash'
  * when it arrives and `false` when it is interrupted, replaced or the target
  * does not exist.
  */
-export function scrollTo(target: ScrollTarget, options: ScrollToOptions = {}): Promise<boolean> {
+export const scrollTo = (target: ScrollTarget, options: ScrollToOptions = {}): Promise<boolean> => {
   if (!isBrowser()) return Promise.resolve(false)
   const container = resolveContainer(options.container)
   const resolved = resolveTarget(target)
@@ -293,7 +300,7 @@ export function scrollTo(target: ScrollTarget, options: ScrollToOptions = {}): P
 }
 
 /** Stop the scroll running on `container` (the page by default). */
-export function cancelScroll(container?: ScrollToOptions['container']): void {
+export const cancelScroll = (container?: ScrollToOptions['container']): void => {
   if (!isBrowser()) return
   running.get(resolveContainer(container))?.cancel()
 }
@@ -322,10 +329,9 @@ const triggerOptions = (trigger: Element, base: ScrollToOptions): ScrollToOption
   if (offset) options.offset = offset
   const container = readString(trigger, 'data-scroll-to-container', '')
   if (container) options.container = container
-  const block = readString(trigger, 'data-scroll-to-block', '')
-  if (block) options.block = block as Align
-  const inline = readString(trigger, 'data-scroll-to-inline', '')
-  if (inline) options.inline = inline as Align
+  // Unknown values are ignored, so a typo keeps the option instead of a wrong alignment.
+  options.block = readEnum(trigger, 'data-scroll-to-block', ALIGNS, base.block ?? 'start')
+  options.inline = readEnum(trigger, 'data-scroll-to-inline', ALIGNS, base.inline ?? 'nearest')
   const duration = readNumber(trigger, 'data-scroll-to-duration', NaN)
   if (Number.isFinite(duration)) options.duration = duration
   return options
@@ -338,12 +344,12 @@ const triggerOptions = (trigger: Element, base: ScrollToOptions): ScrollToOption
  * focus moves to the target. Clicks with a modifier key, or whose default
  * another script prevented, are left alone. Returns `{ destroy }`.
  */
-export function autoScrollTo({
+export const autoScrollTo = ({
   selector = `[${ATTRIBUTE}], a[href^="#"]`,
   scope,
   initialHash = true,
   ...options
-}: AutoScrollToOptions = {}): ScrollToController {
+}: AutoScrollToOptions = {}): ScrollToController => {
   if (!isBrowser()) return { destroy: () => {} }
   const root = scope ?? document
   const base: ScrollToOptions = { focus: true, hash: 'push', ...options }
