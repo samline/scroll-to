@@ -1,5 +1,5 @@
-import { autoScrollTo, cancelScroll, scrollPosition, scrollTo } from '../core/scroll-to.js'
-import type { ScrollToController } from '../core/scroll-to.js'
+import { autoScrollTo, cancelScroll, scrollPosition, scrollTo } from '../vanilla/index.js'
+import type { ScrollToController } from '../vanilla/index.js'
 
 /**
  * Classic script for pages without a build step. It handles clicks on

@@ -1,14 +1,9 @@
-export {
-  ATTRIBUTE,
-  EASINGS,
-  autoScrollTo,
-  cancelScroll,
-  scrollPosition,
-  scrollTo,
-  type Align,
-  type AutoScrollToOptions,
-  type Easing,
-  type ScrollTarget,
-  type ScrollToController,
-  type ScrollToOptions,
+export { ATTRIBUTE, EASINGS } from './scroll-to.js'
+export type {
+  Align,
+  Easing,
+  ScrollTarget,
+  ScrollToOptions,
+  AutoScrollToOptions,
+  ScrollToController,
 } from './scroll-to.js'

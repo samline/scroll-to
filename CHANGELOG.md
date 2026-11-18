@@ -10,6 +10,7 @@ All notable changes to this package. Format: [Keep a Changelog](https://keepacha
 
 ### Changed
 
+- Internal: the DOM controller moved from `src/core` to `src/vanilla`; `src/core` keeps the DOM-free types, constants and helpers. Public entries are unchanged.
 - The package moved from the `samline/utils` monorepo to its own repository, [samline/scroll-to](https://github.com/samline/scroll-to). Homepage, repository and documentation links point to the package's own site.
 
 ## [1.0.0] - 2026-11-13
