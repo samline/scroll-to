@@ -1,6 +1,6 @@
 {
   "status": "verified",
-  "packageVersion": "1.5.0",
+  "packageVersion": "1.6.0",
   "capabilityReview": {
     "status": "verified",
     "integrations": [
@@ -95,6 +95,12 @@
         "evidence": "test/containers.test.ts, tests/e2e/scroll-to.spec.ts, tests/e2e/examples.spec.ts",
         "destination": "site/examples/nested.astro",
         "reviewed": true
+      },
+      {
+        "name": "Queued scrolls and a guided tour (scrollSequence)",
+        "evidence": "test/sequence.test.ts, tests/e2e/scroll-to.spec.ts, tests/e2e/examples.spec.ts",
+        "destination": "site/examples/tour.astro",
+        "reviewed": true
       }
     ],
     "onboarding": {
@@ -110,19 +116,19 @@
   "sources": [
     {
       "source": "README.md",
-      "sha256": "e1ca553b15acbd5dc82065ad6ea6f118702b67c36d99c1dfc0a3c6da1e78fc27",
+      "sha256": "6e03c775dde6f3a7b65e543f2faa023e1590af87f0806a39b03981b6750ccf6f",
       "destination": "docs/src/content/docs/index.mdx",
       "reviewed": true
     },
     {
       "source": "src/browser/global.ts",
-      "sha256": "1dd5d45ad10436ac692419a13c9291cbbf35f1f13cff041890a054d8965cbab3",
+      "sha256": "9c20785cd38367692de1e77bce14bd095a420721c055baff2c196aecd566c254",
       "destination": "docs/src/content/docs/reference/api.md",
       "reviewed": true
     },
     {
       "source": "src/core/scroll-to.ts",
-      "sha256": "109ae2920156dd25381e96a36657ac96e83064d61feb14c79aca2a4dc8b6acdd",
+      "sha256": "6f32aec1fe2226a2deef07de334299db747acc78fcff26b5ae1f1e82f8b72f23",
       "destination": "docs/src/content/docs/reference/api.md",
       "reviewed": true
     },
@@ -146,56 +152,62 @@
     },
     {
       "source": "src/core/scroll-to.ts",
-      "sha256": "109ae2920156dd25381e96a36657ac96e83064d61feb14c79aca2a4dc8b6acdd",
+      "sha256": "6f32aec1fe2226a2deef07de334299db747acc78fcff26b5ae1f1e82f8b72f23",
       "destination": "docs/src/content/docs/reference/configuration.md",
       "reviewed": true
     },
     {
       "source": "src/core/scroll-to.ts",
-      "sha256": "109ae2920156dd25381e96a36657ac96e83064d61feb14c79aca2a4dc8b6acdd",
+      "sha256": "6f32aec1fe2226a2deef07de334299db747acc78fcff26b5ae1f1e82f8b72f23",
       "destination": "docs/src/content/docs/guides/layouts.md",
       "reviewed": true
     },
     {
       "source": "src/core/scroll-to.ts",
-      "sha256": "109ae2920156dd25381e96a36657ac96e83064d61feb14c79aca2a4dc8b6acdd",
+      "sha256": "6f32aec1fe2226a2deef07de334299db747acc78fcff26b5ae1f1e82f8b72f23",
       "destination": "docs/src/content/docs/guides/frameworks.md",
       "reviewed": true
     },
     {
       "source": "src/vanilla/scroll-to.ts",
-      "sha256": "b4ff2abc1f448fd4ac2de255bf6236f8ee5eb27ea99433dc70f532151f46d850",
+      "sha256": "abf32607511c92b9f96fe44649c6bdc726a48a0c70e6f25aae4ebdef7e564e1c",
       "destination": "docs/src/content/docs/guides/lifecycle.md",
       "reviewed": true
     },
     {
       "source": "src/core/scroll-to.ts",
-      "sha256": "109ae2920156dd25381e96a36657ac96e83064d61feb14c79aca2a4dc8b6acdd",
+      "sha256": "6f32aec1fe2226a2deef07de334299db747acc78fcff26b5ae1f1e82f8b72f23",
       "destination": "docs/src/content/docs/guides/lifecycle.md",
       "reviewed": true
     },
     {
       "source": "src/vanilla/scroll-to.ts",
-      "sha256": "b4ff2abc1f448fd4ac2de255bf6236f8ee5eb27ea99433dc70f532151f46d850",
+      "sha256": "abf32607511c92b9f96fe44649c6bdc726a48a0c70e6f25aae4ebdef7e564e1c",
       "destination": "docs/src/content/docs/guides/aim-and-timing.md",
       "reviewed": true
     },
     {
       "source": "src/core/scroll-to.ts",
-      "sha256": "109ae2920156dd25381e96a36657ac96e83064d61feb14c79aca2a4dc8b6acdd",
+      "sha256": "6f32aec1fe2226a2deef07de334299db747acc78fcff26b5ae1f1e82f8b72f23",
       "destination": "docs/src/content/docs/guides/aim-and-timing.md",
       "reviewed": true
     },
     {
       "source": "src/vanilla/scroll-to.ts",
-      "sha256": "b4ff2abc1f448fd4ac2de255bf6236f8ee5eb27ea99433dc70f532151f46d850",
+      "sha256": "abf32607511c92b9f96fe44649c6bdc726a48a0c70e6f25aae4ebdef7e564e1c",
       "destination": "docs/src/content/docs/guides/sections.md",
       "reviewed": true
     },
     {
       "source": "src/core/scroll-to.ts",
-      "sha256": "109ae2920156dd25381e96a36657ac96e83064d61feb14c79aca2a4dc8b6acdd",
+      "sha256": "6f32aec1fe2226a2deef07de334299db747acc78fcff26b5ae1f1e82f8b72f23",
       "destination": "docs/src/content/docs/guides/sections.md",
+      "reviewed": true
+    },
+    {
+      "source": "src/sequence/index.ts",
+      "sha256": "efc148652b6117394181f2f0768ea90fbe17df73ccf8e9db848711b1b30caef5",
+      "destination": "docs/src/content/docs/guides/sequences.md",
       "reviewed": true
     }
   ],
@@ -249,7 +261,12 @@
       "source": "container 'auto', scroll-snap suspension, right to left, CSS scroll-behavior",
       "destination": "docs/src/content/docs/guides/layouts.md",
       "reviewed": true
+    },
+    {
+      "source": "queue, data-scroll-to-queue, scrollSequence (@samline/scroll-to/sequence), SequenceStep, ScrollSequenceOptions, SequenceState, ScrollSequence",
+      "destination": "docs/src/content/docs/guides/sequences.md",
+      "reviewed": true
     }
   ],
-  "notes": "Content reviewed in the utils collection site (1.0.0), then moved to this repository's standalone site on 2026-11-14. 1.1.0 added the lifecycle guide and the progress and events examples; 1.2.0 added the aim and timing guide and the stacked and pages examples; 1.3.0 added the sections guide and the steps and faq examples; 1.4.0 added the highlight and back to top guide and the highlight and back-to-top examples; 1.5.0 added nested boxes, scroll snap and right to left to the layouts guide and the nested example. Source hashes were recomputed against @samline/scroll-to@1.5.0."
+  "notes": "Content reviewed in the utils collection site (1.0.0), then moved to this repository's standalone site on 2026-11-14. 1.1.0 added the lifecycle guide and the progress and events examples; 1.2.0 added the aim and timing guide and the stacked and pages examples; 1.3.0 added the sections guide and the steps and faq examples; 1.4.0 added the highlight and back to top guide and the highlight and back-to-top examples; 1.5.0 added nested boxes, scroll snap and right to left to the layouts guide and the nested example; 1.6.0 added the queues and guided tours guide, the sequence entry and the tour example. Source hashes were recomputed against @samline/scroll-to@1.6.0."
 }

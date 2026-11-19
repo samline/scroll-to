@@ -124,6 +124,31 @@ const button = backToTop('.back-to-top', { threshold: 600, target: '#main' })
 
 The click is handled by the button itself, so an `autoScrollTo` on the same page leaves it alone. See [Highlight and back to top](../../guides/feedback/) for the CSS.
 
+## scrollSequence(steps, options?)
+
+```ts
+import { scrollSequence } from '@samline/scroll-to/sequence'
+
+scrollSequence(steps: Array<ScrollTarget | SequenceStep>, options?: ScrollSequenceOptions): ScrollSequence
+```
+
+A guided tour through `steps`: targets, or `{ target, pause, ...scrollOptions }`. It lives in its own entry, `@samline/scroll-to/sequence`, and in the browser bundle as `ScrollTo.scrollSequence`.
+
+| Member      | Returns            | Description                                                       |
+| ----------- | ------------------ | ----------------------------------------------------------------- |
+| `play()`    | `void`             | Move on by itself from the next step, staying `pause` ms on each  |
+| `pause()`   | `void`             | Stop moving on; a scroll on its way still arrives                 |
+| `toggle()`  | `void`             | `play()` or `pause()`                                             |
+| `next()`    | `Promise<boolean>` | Scroll to the next step; `false` past the last one without `loop` |
+| `prev()`    | `Promise<boolean>` | Scroll to the previous step                                       |
+| `goTo(i)`   | `Promise<boolean>` | Scroll to step `i`, clamped to the list                           |
+| `index`     | `number`           | The current step, `-1` before the first one                       |
+| `playing`   | `boolean`          | Whether it moves on by itself                                     |
+| `length`    | `number`           | The number of steps                                               |
+| `destroy()` | `void`             | Stop playing and stop its scroll; later calls do nothing          |
+
+Options: `pause` (default `2000`), `loop` (`false`), `autoplay` (`false`), `onChange({ index, playing, step })`, and any scroll option for every step. It pauses itself when its scroll is interrupted or replaced. See [Queues and guided tours](../../guides/sequences/).
+
 ## Events
 
 | Event             | Dispatched                                 | `event.detail` |
@@ -182,7 +207,7 @@ scrollTo('#faq', { easing: brand })
 
 ## Types and constants
 
-`ScrollToOptions`, `AutoScrollToOptions`, `ScrollToController`, `ScrollToInstance`, `BackToTopOptions`, `BackToTopController`, `ScrollTarget`, `ScrollPoint`, `ScrollCoordinate`, `OffsetValue`, `OffsetContext`, `EasingValue`, `ScrollDetail`, `ScrollProgress`, `ScrollResult`, `ScrollEndReason`, `Align` and `Easing`.
+`ScrollToOptions`, `AutoScrollToOptions`, `ScrollToController`, `ScrollToInstance`, `BackToTopOptions`, `BackToTopController`, and from `@samline/scroll-to/sequence` `SequenceStep`, `ScrollSequenceOptions`, `SequenceState` and `ScrollSequence`, `ScrollTarget`, `ScrollPoint`, `ScrollCoordinate`, `OffsetValue`, `OffsetContext`, `EasingValue`, `ScrollDetail`, `ScrollProgress`, `ScrollResult`, `ScrollEndReason`, `Align` and `Easing`.
 
 | Constant                                                                             | Value                                                                    |
 | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
@@ -200,10 +225,10 @@ scrollTo('#faq', { easing: brand })
 
 The browser bundle (`dist/browser/scroll-to.global.js`) defines:
 
-| Member                                                                                                                                                                    | Description                                                                                     |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `ScrollTo.scrollTo`, `ScrollTo.scrollPosition`, `ScrollTo.cancelScroll`, `ScrollTo.isScrolling`, `ScrollTo.autoScrollTo`, `ScrollTo.createScrollTo`, `ScrollTo.backToTop` | Same as the package exports                                                                     |
-| `ScrollTo.auto(options?)`                                                                                                                                                 | Start (or restart) handling clicks and back-to-top buttons with options; returns the controller |
-| `ScrollTo.controller`                                                                                                                                                     | The controller of the automatic run, or `null`                                                  |
+| Member                                                                                                                                                                                               | Description                                                                                     |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `ScrollTo.scrollTo`, `ScrollTo.scrollPosition`, `ScrollTo.cancelScroll`, `ScrollTo.isScrolling`, `ScrollTo.autoScrollTo`, `ScrollTo.createScrollTo`, `ScrollTo.backToTop`, `ScrollTo.scrollSequence` | Same as the package exports                                                                     |
+| `ScrollTo.auto(options?)`                                                                                                                                                                            | Start (or restart) handling clicks and back-to-top buttons with options; returns the controller |
+| `ScrollTo.controller`                                                                                                                                                                                | The controller of the automatic run, or `null`                                                  |
 
 It starts on its own when the DOM is ready, and turns every `[data-scroll-to-back-to-top]` element into a `backToTop` button; the attribute's value is the threshold (empty for one screen). `ScrollTo.controller.destroy()` stops both. With `data-manual` on the script tag it waits for `ScrollTo.auto()`; a call made before the DOM is ready also replaces the automatic start.

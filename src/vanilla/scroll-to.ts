@@ -39,8 +39,25 @@ interface Running {
   cancel: (reason: ScrollEndReason) => void
   /** Where it is going, so `'next'` pressed again steps on from there. */
   target: Element | null
+  /** Settles when it ends, so a scroll with `queue` can wait for it. */
+  finished?: Promise<boolean>
 }
 const running = new WeakMap<object, Running>()
+
+/** Scrolls waiting with `queue`, per container; `dropped` ends them unstarted. */
+interface Line {
+  tail: Promise<unknown>
+  dropped: ScrollEndReason | null
+}
+const lines = new WeakMap<object, Line>()
+
+/** End the scrolls waiting in line on `container` with `reason`, without starting them. */
+const drop = (container: object, reason: ScrollEndReason) => {
+  const line = lines.get(container)
+  if (!line) return
+  line.dropped = reason
+  lines.delete(container)
+}
 const WHEN = ['always', 'needed'] as const
 const HASH = ['push', 'replace', 'false'] as const
 
@@ -442,12 +459,29 @@ const run = (
   target: ScrollTarget,
   options: ScrollToOptions,
   trigger: Element | null,
-  owner?: AbortSignal
+  owner?: AbortSignal,
+  // `true` once a queued scroll's turn comes, or the reason it was dropped.
+  queued: boolean | ScrollEndReason = false
 ): Promise<boolean> => {
   if (!isBrowser()) return Promise.resolve(false)
+  if (options.queue && !queued) {
+    // Wait behind the running scroll and the ones already waiting.
+    const key = resolveContainer(options.container === 'auto' ? null : options.container)
+    const ahead = lines.get(key)?.tail ?? running.get(key)?.finished
+    if (ahead) {
+      const line = lines.get(key) ?? { tail: ahead, dropped: null }
+      const next = line.tail.then(() => run(target, options, trigger, owner, line.dropped ?? true))
+      line.tail = next
+      lines.set(key, line)
+      void next.then(() => {
+        if (lines.get(key) === line && line.tail === next) lines.delete(key)
+      })
+      return next
+    }
+  }
   const resolved = resolveTarget(target, options)
   const element = resolved instanceof Element ? resolved : null
-  if (element && options.reveal !== false) reveal(element)
+  if (element && options.reveal !== false && typeof queued !== 'string') reveal(element)
   const containers = containersFor(options.container, element)
   const container = containers[0]!
   const hosts = containers.map(hostOf)
@@ -473,11 +507,16 @@ const run = (
     return result.arrived
   }
 
+  if (typeof queued === 'string') return Promise.resolve(end(queued))
   const firsts = resolved ? each.map(own => scrollPosition(resolved, own)) : []
   if (!firsts[0]) return Promise.resolve(end('missing'))
   if (signals.some(signal => signal.aborted)) return Promise.resolve(end('cancelled'))
 
-  for (const one of containers) running.get(one)?.cancel('replaced')
+  for (const one of containers) {
+    // A scroll that does not wait in line replaces the running one and the waiting ones.
+    if (!options.queue) drop(one, 'replaced')
+    running.get(one)?.cancel('replaced')
+  }
 
   const marked = trigger ? [...hosts, trigger] : hosts
   let restoreSnap = () => {}
@@ -546,7 +585,8 @@ const run = (
   const easing = parseEasing(options.easing)
   const interruptible = options.interruptible ?? true
 
-  return new Promise<boolean>(resolve => {
+  let entry: Running | null = null
+  const finished = new Promise<boolean>(resolve => {
     let frame = 0
     let begun: number | null = null
     let done = false
@@ -555,7 +595,11 @@ const run = (
       if (done) return
       done = true
       cancelAnimationFrame(frame)
-      for (const one of containers) if (running.get(one) === entry) running.delete(one)
+      for (const one of containers) {
+        if (running.get(one) === entry) running.delete(one)
+        // The visitor took over, or the code stopped it: what waits goes too.
+        if (reason === 'interrupted' || reason === 'cancelled') drop(one, reason)
+      }
       if (interruptible) {
         for (const type of INTERRUPTIONS) window.removeEventListener(type, interrupt)
       }
@@ -567,7 +611,7 @@ const run = (
       if (takesOver(event)) stop('interrupted')
     }
     const abort = () => stop('cancelled')
-    const entry: Running = { cancel: stop, target: element }
+    entry = { cancel: stop, target: element }
     for (const one of containers) running.set(one, entry)
     if (interruptible) {
       for (const type of INTERRUPTIONS) window.addEventListener(type, interrupt, { passive: true })
@@ -588,6 +632,8 @@ const run = (
     }
     frame = requestAnimationFrame(step)
   })
+  ;(entry as Running | null)!.finished = finished
+  return finished
 }
 
 /** Keys that scroll the page themselves. */
@@ -624,7 +670,9 @@ export const scrollTo = (target: ScrollTarget, options: ScrollToOptions = {}): P
 /** Stop the scroll running on `container` (the page by default). */
 export const cancelScroll = (container?: ScrollToOptions['container']): void => {
   if (!isBrowser()) return
-  running.get(resolveContainer(container))?.cancel('cancelled')
+  const key = resolveContainer(container)
+  drop(key, 'cancelled')
+  running.get(key)?.cancel('cancelled')
 }
 
 /** Whether a scroll is running on `container` (the page by default). */
@@ -665,6 +713,7 @@ const triggerOptions = (trigger: Element, base: ScrollToOptions): ScrollToOption
   const easing = readString(trigger, 'data-scroll-to-easing', '')
   if (easing) options.easing = easing as `cubic-bezier(${string})`
   options.when = readEnum(trigger, 'data-scroll-to-when', WHEN, base.when ?? 'always')
+  options.queue = readBoolean(trigger, 'data-scroll-to-queue', base.queue ?? false)
   const sections = readString(trigger, 'data-scroll-to-sections', '')
   if (sections) options.sections = sections
   options.focus = readBoolean(trigger, 'data-scroll-to-focus', base.focus ?? false)

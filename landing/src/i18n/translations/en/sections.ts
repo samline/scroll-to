@@ -37,7 +37,7 @@ const sections = {
     description:
       'Same-page links and data-scroll-to triggers glide to their target, stop below your fixed header and hand focus to what they reveal.',
     descriptionContinuation: 'Install it, try the live preview, then read the full reference.',
-    footnotes: ['About 6.1 KB gzip', 'Zero dependencies', `${project.license} licensed`],
+    footnotes: ['About 6.3 KB gzip', 'Zero dependencies', `${project.license} licensed`],
     compatibilityLabel: 'ONE SMALL SCRIPT. RIGHT AT HOME IN YOUR STACK.',
     platforms: ['JavaScript', 'TypeScript', 'React', 'Vue', 'Svelte', 'Shopify', 'WordPress'],
   },
@@ -116,9 +116,9 @@ const sections = {
         description: 'A classic script that starts on its own.',
       },
       core: {
-        label: 'Measure only',
-        entrypoint: 'scrollPosition(target, options)',
-        description: 'Where it would scroll, without moving.',
+        label: 'Guided tours',
+        entrypoint: `${project.npmName}/sequence`,
+        description: 'scrollSequence: play, pause and step through a list of stops.',
       },
       style: {
         label: 'Styling',

@@ -569,4 +569,81 @@ direction.addEventListener('click', () => {
 })`,
     },
   },
+  {
+    id: 'tour',
+    tab: 'Guided tour',
+    title: 'A tour that plays, pauses and steps',
+    description:
+      'scrollSequence walks through a list of stops, staying a moment on each. Play it, pause it or step by hand; the counter is read out politely. Scroll yourself while it plays and it pauses, so the visitor stays in control. Each stop can have its own pause and options.',
+    files: {
+      html: `<nav class="tour" aria-label="Tour">
+  <button type="button" id="prev">Previous</button>
+  <button type="button" id="play" aria-pressed="false">Play</button>
+  <button type="button" id="next">Next</button>
+  <output id="status" aria-live="polite">Not started</output>
+</nav>
+<main>
+  <section id="welcome">
+    <h2>Welcome</h2>
+    <p>Start here: the tour moves on by itself.</p>
+  </section>
+  <section id="search">
+    <h2>Search</h2>
+    <p>Find anything from the top bar.</p>
+  </section>
+  <section id="reports">
+    <h2>Reports</h2>
+    <p>Your numbers, updated every hour.</p>
+  </section>
+  <section id="share">
+    <h2>Share</h2>
+    <p>Send a link to your team.</p>
+  </section>
+</main>`,
+      css: `body { font-family: system-ui, sans-serif; margin: 0; }
+.tour { position: fixed; inset: 0 0 auto; display: flex; gap: 0.5rem; align-items: center; padding: 0.75rem 1rem; background: #fff; border-bottom: 1px solid #ddd; }
+main section { min-height: 80vh; padding: 4rem 1rem 1rem; border-top: 1px solid #eee; }
+[aria-pressed='true'] { background: #78350f; color: #fff; }`,
+      js: `const play = document.querySelector('#play')
+const status = document.querySelector('#status')
+
+const tour = ScrollTo.scrollSequence(
+  ['#welcome', '#search', { target: '#reports', pause: 3500 }, '#share'],
+  {
+    offset: '.tour',
+    pause: 2000,
+    onChange: ({ index, playing }) => {
+      play.textContent = playing ? 'Pause' : 'Play'
+      play.setAttribute('aria-pressed', String(playing))
+      if (index >= 0) status.textContent = \`Stop \${index + 1} of \${tour.length}\`
+    },
+  }
+)
+
+play.addEventListener('click', () => tour.toggle())
+document.querySelector('#next').addEventListener('click', () => tour.next())
+document.querySelector('#prev').addEventListener('click', () => tour.prev())`,
+      esm: `import { scrollSequence } from '@samline/scroll-to/sequence'
+
+const play = document.querySelector('#play')
+const status = document.querySelector('#status')
+
+const tour = scrollSequence(
+  ['#welcome', '#search', { target: '#reports', pause: 3500 }, '#share'],
+  {
+    offset: '.tour',
+    pause: 2000,
+    onChange: ({ index, playing }) => {
+      play.textContent = playing ? 'Pause' : 'Play'
+      play.setAttribute('aria-pressed', String(playing))
+      if (index >= 0) status.textContent = \`Stop \${index + 1} of \${tour.length}\`
+    },
+  }
+)
+
+play.addEventListener('click', () => tour.toggle())
+document.querySelector('#next').addEventListener('click', () => tour.next())
+document.querySelector('#prev').addEventListener('click', () => tour.prev())`,
+    },
+  },
 ]

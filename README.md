@@ -73,7 +73,7 @@ For Shopify, WordPress or plain HTML pages without a build step, load the browse
 
 ```html
 <script
-  src="https://cdn.jsdelivr.net/npm/@samline/scroll-to@1.5.0/dist/browser/scroll-to.global.js"
+  src="https://cdn.jsdelivr.net/npm/@samline/scroll-to@1.6.0/dist/browser/scroll-to.global.js"
   defer
 ></script>
 ```
@@ -116,6 +116,10 @@ The wheel, a touch, a key that scrolls or a press on the scrollbar stops the scr
 
 `highlight` marks the target with `data-scroll-to-arrived` for a moment once it arrives, and `--scroll-to-progress` follows a running scroll from `0` to `1` on the trigger and the scrolling element, so CSS can flash the target or fill a bar. `backToTop(button)` shows a button once the page is scrolled one screen down, exposes `--scroll-to-scrolled` for a progress ring, and moves focus to the top when pressed. With the CDN script, `data-scroll-to-back-to-top` does it without code.
 
+### Queues and guided tours
+
+`queue: true` waits for the running scroll instead of replacing it, so scrolls can follow one another. `scrollSequence` from `@samline/scroll-to/sequence` walks through a list of stops with `play`, `pause`, `next`, `prev`, `loop` and a pause per step, and pauses itself when the visitor takes over: tours, demos and kiosks.
+
 ### Write the defaults once
 
 `createScrollTo({ offset: '#header' })` returns a scroller with shared options for every call, its own `auto()` for links, and one `destroy()` that stops what it started.
@@ -144,16 +148,19 @@ Scroll the page or any box, and center the selected tab of a horizontal strip wi
 | `highlight`                        | Mark the target with `data-scroll-to-arrived` on arrival, for a CSS highlight.          |
 | `backToTop(button, options?)`      | A back-to-top button with `data-scroll-to-visible` and `--scroll-to-scrolled`.          |
 | `container: 'auto'`                | Scroll every box around the target, then the page, in one animation.                    |
+| `queue`                            | Wait for the running scroll instead of replacing it.                                    |
+| `scrollSequence(steps, options?)`  | A guided tour: `{ play, pause, toggle, next, prev, goTo, destroy }`.                    |
 | `reveal`                           | Open closed `<details>` and `hidden="until-found"` around the target (default `true`).  |
 | `scroll-to:start`, `scroll-to:end` | Bubbling events on the target, with the same details as the callbacks.                  |
 
 ### Entrypoints
 
-| Entrypoint                   | When to use                                    |
-| ---------------------------- | ---------------------------------------------- |
-| `@samline/scroll-to`         | ESM or CommonJS, every function.               |
-| `@samline/scroll-to/vanilla` | `scrollTo` as the default export.              |
-| `@samline/scroll-to/browser` | Classic script that defines `window.ScrollTo`. |
+| Entrypoint                    | When to use                                    |
+| ----------------------------- | ---------------------------------------------- |
+| `@samline/scroll-to`          | ESM or CommonJS, every function.               |
+| `@samline/scroll-to/vanilla`  | `scrollTo` as the default export.              |
+| `@samline/scroll-to/sequence` | `scrollSequence` for guided tours.             |
+| `@samline/scroll-to/browser`  | Classic script that defines `window.ScrollTo`. |
 
 ## Documentation
 
@@ -169,6 +176,7 @@ Read the [documentation](https://samline.github.io/scroll-to/docs/) for the full
 | [Sections](https://samline.github.io/scroll-to/docs/guides/sections/)             | Next and previous, hidden content, per-link focus and hash, and what stops a scroll.     |
 | [Lifecycle](https://samline.github.io/scroll-to/docs/guides/lifecycle/)           | Callbacks, end reasons, events, the state attribute, `AbortSignal` and `createScrollTo`. |
 | [Feedback](https://samline.github.io/scroll-to/docs/guides/feedback/)             | Highlight on arrival, `--scroll-to-progress`, and a back-to-top button with a ring.      |
+| [Sequences](https://samline.github.io/scroll-to/docs/guides/sequences/)           | `queue`, and guided tours with `scrollSequence`: play, pause, steps and loop.            |
 | [Frameworks](https://samline.github.io/scroll-to/docs/guides/frameworks/)         | React, Vue, Svelte, Astro and client-side routers.                                       |
 
 ## Changelog

@@ -30,6 +30,10 @@ Scroll To animates a jump without losing what a native jump does. Links handled 
 
 `highlight` marks the target with `data-scroll-to-arrived` for a moment. It is a visual cue only: if arriving changes something the visitor must know, say it in text as well, for example in an `aria-live` region. Under reduced motion the attribute is still set; keep its style to a color change there and animate it only inside `@media (prefers-reduced-motion: no-preference)`.
 
+## Tours that move by themselves
+
+A playing `scrollSequence` moves the page on its own. Show a Pause button whenever it plays (WCAG 2.2.2), keep its `aria-pressed` and label in sync with `onChange`, and announce the step in an `aria-live="polite"` region. The tour pauses itself when the visitor scrolls or presses a key that scrolls, and it leaves focus alone unless a step sets `focus: true`. See [Queues and guided tours](../sequences/).
+
 ## Hidden content
 
 Links to content inside a closed `<details>` or a `hidden="until-found"` panel open it before scrolling, like the browser's own fragment links, so the target is visible and can take focus. [Sections and hidden content](../sections/) has the details.

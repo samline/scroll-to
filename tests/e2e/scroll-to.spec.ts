@@ -455,3 +455,42 @@ test('right-to-left strips align to the right and step forward to the left', asy
   expect(result.end).toBe(-result.max)
   expect(Math.abs(result.aligned)).toBeLessThanOrEqual(1)
 })
+
+test('queued scrolls run one after another and a sequence plays through', async ({
+  load,
+  page,
+}) => {
+  await load(
+    `${Array.from({ length: 4 }, (_, i) => `<section id="s${i}" style="height: 900px">Section ${i}</section>`).join('')}`,
+    'scroll-to'
+  )
+  const queued = await page.evaluate(async () => {
+    const ScrollTo = (window as any).ScrollTo
+    const ends: number[] = []
+    const onEnd = () => ends.push(Math.round(scrollY))
+    await Promise.all([
+      ScrollTo.scrollTo('#s1', { duration: 250, onEnd }),
+      ScrollTo.scrollTo('#s2', { duration: 250, queue: true, onEnd }),
+      ScrollTo.scrollTo('#s3', { duration: 250, queue: true, onEnd }),
+    ])
+    return ends
+  })
+  expect(queued).toEqual([900, 1800, 2700])
+
+  const played = await page.evaluate(
+    () =>
+      new Promise<number[]>(resolve => {
+        const seen: number[] = []
+        const tour = (window as any).ScrollTo.scrollSequence(['#s0', '#s1', '#s2'], {
+          duration: 200,
+          pause: 150,
+          onChange: ({ index, playing }: { index: number; playing: boolean }) => {
+            if (!playing && index === 2) resolve(seen)
+          },
+          onEnd: () => seen.push(Math.round(scrollY)),
+        })
+        tour.play()
+      })
+  )
+  expect(played).toEqual([0, 900, 1800])
+})

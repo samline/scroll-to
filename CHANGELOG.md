@@ -2,6 +2,19 @@
 
 All notable changes to this package. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow [semver](https://semver.org/).
 
+## [1.6.0] - 2026-11-19
+
+### Added
+
+- `queue: true` (and `data-scroll-to-queue`) waits for the running scroll on the container, and the ones already waiting, instead of replacing it. A scroll without `queue` ends the waiting ones as `replaced`, an interruption as `interrupted`, and `cancelScroll()` or an aborted `signal` as `cancelled`, all without moving.
+- `scrollSequence(steps, options?)` in a new entry, `@samline/scroll-to/sequence` (and `ScrollTo.scrollSequence` in the browser bundle): guided tours through a list of targets or `{ target, pause, ...options }` steps, with `play`, `pause`, `toggle`, `next`, `prev`, `goTo`, `loop`, `autoplay`, a pause per step, `onChange({ index, playing, step })` and an idempotent `destroy()`. It pauses itself when the visitor takes over or another scroll replaces its own.
+- Types `SequenceStep`, `ScrollSequenceOptions`, `SequenceState` and `ScrollSequence`.
+- Documentation: a Queues and guided tours guide, and a Guided tour example.
+
+### Changed
+
+- Size budgets: 6.4 KB gzip for the package, 5.3 KB for `@samline/scroll-to/sequence` and 7 KB for the browser bundle, which now includes `scrollSequence` (from 6.2 and 6.3 KB).
+
 ## [1.5.0] - 2026-11-18
 
 ### Added

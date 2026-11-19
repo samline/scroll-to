@@ -46,6 +46,7 @@ describe('browser global', () => {
     expect(ScrollTo.cancelScroll).toBeTypeOf('function')
     expect(ScrollTo.isScrolling()).toBe(false)
     expect(ScrollTo.createScrollTo().to).toBeTypeOf('function')
+    expect(ScrollTo.scrollSequence(['top']).length).toBe(1)
   })
 
   it('keeps a start made by the page before the DOM is ready', async () => {

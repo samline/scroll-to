@@ -25,6 +25,7 @@ export default {
     'guides/sections': 'Sections and hidden content',
     'guides/lifecycle': 'Lifecycle and events',
     'guides/feedback': 'Highlight and back to top',
+    'guides/sequences': 'Queues and guided tours',
     index: 'Overview',
     'reference/api': 'API reference',
     'reference/configuration': 'Configuration',

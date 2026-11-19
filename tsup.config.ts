@@ -9,6 +9,7 @@ export default defineConfig([
     entry: {
       index: 'src/index.ts',
       'vanilla/index': 'src/vanilla/index.ts',
+      'sequence/index': 'src/sequence/index.ts',
     },
     format: ['esm', 'cjs'],
     dts: { resolve: noExternal },

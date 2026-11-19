@@ -53,6 +53,8 @@ import { href } from '../../lib/routes'
 | Show where it landed     | `highlight` and `[data-scroll-to-arrived]`                |
 | Back to top              | `backToTop(button)` or `data-scroll-to-back-to-top`       |
 | Stop it from anywhere    | `signal` (an `AbortSignal`) or `cancelScroll()`           |
+| Wait for the running one | `queue: true`                                             |
+| Guided tours             | `scrollSequence` from `@samline/scroll-to/sequence`       |
 | Share options            | `createScrollTo(defaults)`                                |
 
 ## Choose your next step
@@ -110,6 +112,12 @@ Callbacks, end reasons, events, the state attribute, AbortSignal and createScrol
 <LinkCard href={href('guides/feedback')} title="Highlight and back to top">
 
 Highlight the target on arrival, a progress property, and a back-to-top button with a ring.
+
+</LinkCard>
+
+<LinkCard href={href('guides/sequences')} title="Queues and guided tours">
+
+Scrolls that wait their turn, and tours that play, pause and step.
 
 </LinkCard>
 

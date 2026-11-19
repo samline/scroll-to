@@ -95,6 +95,13 @@ export interface ScrollToOptions {
   reveal?: boolean
   /** `'instant'` jumps. Reduced motion always jumps. Defaults to `'smooth'`. */
   behavior?: 'smooth' | 'instant'
+  /**
+   * Wait for the running scroll on the container (and the ones already
+   * waiting) instead of replacing it. A scroll without `queue`, an
+   * interruption or `cancelScroll()` ends the waiting ones unstarted.
+   * Defaults to `false`.
+   */
+  queue?: boolean
   /** Stop when the visitor scrolls, touches or presses a key. Defaults to `true`. */
   interruptible?: boolean
   /**

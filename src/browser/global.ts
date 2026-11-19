@@ -7,6 +7,7 @@ import {
   scrollPosition,
   scrollTo,
 } from '../vanilla/index.js'
+import { scrollSequence } from '../sequence/index.js'
 import type { BackToTopController, ScrollToController } from '../vanilla/index.js'
 
 /**
@@ -32,6 +33,7 @@ const api = {
   autoScrollTo,
   createScrollTo,
   backToTop,
+  scrollSequence,
   /** Start (or restart) handling clicks and back-to-top buttons. Returns the controller. */
   auto: (options?: Parameters<typeof autoScrollTo>[0]) => {
     controller?.destroy()
@@ -79,5 +81,6 @@ export {
   createScrollTo,
   isScrolling,
   scrollPosition,
+  scrollSequence,
   scrollTo,
 }

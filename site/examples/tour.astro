@@ -1,0 +1,77 @@
+---
+import './_shared.css'
+
+const stops = [
+  ['Welcome', 'Start here: the tour moves on by itself.'],
+  ['Search', 'Find anything from the top bar.'],
+  ['Reports', 'Your numbers, updated every hour. This stop stays longer.'],
+  ['Share', 'Send a link to your team.'],
+]
+---
+
+<div class="preview scroll-to-example">
+  <div class="box" data-preview="tour" tabindex="0" aria-label="Tour">
+    <div class="bar">
+      <button type="button" class="pill" data-prev>Previous</button>
+      <button type="button" class="pill" data-play aria-pressed="false">Play</button>
+      <button type="button" class="pill" data-next>Next</button>
+      <output aria-live="polite">Not started</output>
+    </div>
+    {stops.map(([title, text]) => (
+      <section>
+        <p class="part-title">{title}</p>
+        <p>{text}</p>
+      </section>
+    ))}
+  </div>
+</div>
+
+<script>
+  import { scrollSequence } from '@samline/scroll-to/sequence'
+  import { preview } from '../../shared/lib/preview'
+
+  preview('tour', stage => {
+    const box = stage.querySelector<HTMLElement>('[data-preview="tour"]')!
+    const play = box.querySelector<HTMLElement>('[data-play]')!
+    const status = box.querySelector('output')!
+    const [welcome, search, reports, share] = box.querySelectorAll('section')
+
+    const tour = scrollSequence([welcome!, search!, { target: reports!, pause: 3500 }, share!], {
+      container: box,
+      offset: 'auto',
+      pause: 2000,
+      onChange: ({ index, playing }) => {
+        play.textContent = playing ? 'Pause' : 'Play'
+        play.setAttribute('aria-pressed', String(playing))
+        if (index >= 0) status.value = `Stop ${index + 1} of ${tour.length}`
+      },
+    })
+    const toggle = () => tour.toggle()
+    const next = () => void tour.next()
+    const prev = () => void tour.prev()
+    play.addEventListener('click', toggle)
+    box.querySelector('[data-next]')!.addEventListener('click', next)
+    box.querySelector('[data-prev]')!.addEventListener('click', prev)
+
+    return () => {
+      tour.destroy()
+      play.removeEventListener('click', toggle)
+      box.querySelector('[data-next]')!.removeEventListener('click', next)
+      box.querySelector('[data-prev]')!.removeEventListener('click', prev)
+      play.textContent = 'Play'
+      play.setAttribute('aria-pressed', 'false')
+      status.value = 'Not started'
+      box.scrollTop = 0
+    }
+  })
+</script>
+
+<style>
+  [data-play][aria-pressed='true'] {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+  .bar output {
+    color: var(--color-text-subtle);
+  }
+</style>

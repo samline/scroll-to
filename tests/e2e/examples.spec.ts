@@ -236,4 +236,40 @@ test.describe('scroll-to copyable examples', () => {
     await expect(page.locator('#card-2')).toBeFocused()
     await expect.poll(async () => Math.abs((await edges('card-2')).right) <= 1).toBe(true)
   })
+
+  test('the tour plays, pauses when asked and steps by hand', async ({ page }) => {
+    await openDocument(page, find(scrollToExamples, 'tour'))
+    // Where each stop lands, relative to the bar, as it arrives.
+    await page.evaluate(() => {
+      const arrivals: Array<[string, number]> = []
+      ;(window as any).arrivals = arrivals
+      const bar = document.querySelector('.tour')!
+      document.addEventListener('scroll-to:end', event => {
+        const target = event.target as Element
+        arrivals.push([
+          target.id,
+          Math.round(target.getBoundingClientRect().top - bar.getBoundingClientRect().bottom),
+        ])
+      })
+    })
+    const play = page.getByRole('button', { name: 'Play' })
+    await play.click()
+    await expect(page.locator('#status')).toHaveText('Stop 1 of 4')
+    await expect(page.locator('#status')).toHaveText('Stop 2 of 4', { timeout: 5000 })
+    await expect
+      .poll(() => page.evaluate(() => (window as any).arrivals as Array<[string, number]>))
+      .toContainEqual(['search', 0])
+    await page.getByRole('button', { name: 'Pause' }).click()
+    await expect(page.getByRole('button', { name: 'Play' })).toHaveAttribute(
+      'aria-pressed',
+      'false'
+    )
+    await page.waitForTimeout(2500)
+    await expect(page.locator('#status')).toHaveText('Stop 2 of 4')
+
+    await page.getByRole('button', { name: 'Next' }).click()
+    await expect(page.locator('#status')).toHaveText('Stop 3 of 4')
+    await page.getByRole('button', { name: 'Previous' }).click()
+    await expect(page.locator('#status')).toHaveText('Stop 2 of 4')
+  })
 })
