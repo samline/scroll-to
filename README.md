@@ -73,7 +73,7 @@ For Shopify, WordPress or plain HTML pages without a build step, load the browse
 
 ```html
 <script
-  src="https://cdn.jsdelivr.net/npm/@samline/scroll-to@1.1.0/dist/browser/scroll-to.global.js"
+  src="https://cdn.jsdelivr.net/npm/@samline/scroll-to@1.2.0/dist/browser/scroll-to.global.js"
   defer
 ></script>
 ```
@@ -84,7 +84,11 @@ The bundle defines `window.ScrollTo`. Add `data-manual` to the script tag and ca
 
 ### Lands where it should
 
-Keep space for a fixed header with `offset` (pixels, a percentage, or the header element measured live), align to the start, center, end or nearest edge on both axes, and land precisely even when images load on the way: the destination is measured on every frame.
+Keep space for a fixed header with `offset`: pixels, a percentage, the header element measured live, `'auto'` to find every fixed and sticky bar stuck at the top, or `'css'` to reuse your `scroll-padding-top`. Offsets add up in arrays. Align to the start, center, end or nearest edge on both axes, skip the scroll when the target is already visible with `when: 'needed'`, and land precisely even when images load on the way: the destination is measured on every frame.
+
+### Any target, any pace
+
+Scroll to `'bottom'`, move relatively with `'+=100%'`, page through a strip with `{ left: '+=100%' }`, and time it with a `duration`, a constant `speed` or a `maxDuration`. Easing takes a name, any CSS `cubic-bezier()` or your own function.
 
 ### Accessible like a native jump
 
@@ -118,6 +122,10 @@ Scroll the page or any box, and center the selected tab of a horizontal strip wi
 | `createScrollTo(defaults?)`        | A scroller with shared options: `{ to, position, cancel, isScrolling, auto, destroy }`. |
 | `onStart`, `onProgress`, `onEnd`   | Options that follow a scroll; `onEnd` gets `{ arrived, reason, top, left, target }`.    |
 | `signal`                           | An `AbortSignal` that stops the scroll.                                                 |
+| `offset: 'auto' \| 'css' \| [...]` | Find stuck headers, read CSS scroll padding, or add offsets up.                         |
+| `when: 'needed'`                   | Skip the scroll when the target is already visible.                                     |
+| `speed`, `maxDuration`, `easing`   | Pace by pixels per second; easing takes names, `cubic-bezier()` or a function.          |
+| `cubicBezier(x1, y1, x2, y2)`      | The easing function of a CSS curve.                                                     |
 | `scroll-to:start`, `scroll-to:end` | Bubbling events on the target, with the same details as the callbacks.                  |
 
 ### Entrypoints
@@ -132,14 +140,15 @@ Scroll the page or any box, and center the selected tab of a horizontal strip wi
 
 Read the [documentation](https://samline.github.io/scroll-to/docs/) for the full guides and API contracts, and explore [working examples](https://samline.github.io/scroll-to/examples/) with complete and separate source files.
 
-| Guide                                                                        | What it covers                                                                           |
-| ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| [Installation](https://samline.github.io/scroll-to/docs/getting-started/)    | npm, CDN and the first links.                                                            |
-| [API reference](https://samline.github.io/scroll-to/docs/reference/api/)     | Every function, `createScrollTo`, the events, the types and `window.ScrollTo`.           |
-| [Options](https://samline.github.io/scroll-to/docs/reference/configuration/) | Options, targets and attributes.                                                         |
-| [Layouts](https://samline.github.io/scroll-to/docs/guides/layouts/)          | Fixed headers, skip links, containers, tabs and history.                                 |
-| [Lifecycle](https://samline.github.io/scroll-to/docs/guides/lifecycle/)      | Callbacks, end reasons, events, the state attribute, `AbortSignal` and `createScrollTo`. |
-| [Frameworks](https://samline.github.io/scroll-to/docs/guides/frameworks/)    | React, Vue, Svelte, Astro and client-side routers.                                       |
+| Guide                                                                             | What it covers                                                                           |
+| --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| [Installation](https://samline.github.io/scroll-to/docs/getting-started/)         | npm, CDN and the first links.                                                            |
+| [API reference](https://samline.github.io/scroll-to/docs/reference/api/)          | Every function, `createScrollTo`, the events, the types and `window.ScrollTo`.           |
+| [Options](https://samline.github.io/scroll-to/docs/reference/configuration/)      | Options, targets and attributes.                                                         |
+| [Layouts](https://samline.github.io/scroll-to/docs/guides/layouts/)               | Fixed headers, skip links, containers, tabs and history.                                 |
+| [Aim and timing](https://samline.github.io/scroll-to/docs/guides/aim-and-timing/) | Every offset, relative targets and points, `when`, speed, durations and easing.          |
+| [Lifecycle](https://samline.github.io/scroll-to/docs/guides/lifecycle/)           | Callbacks, end reasons, events, the state attribute, `AbortSignal` and `createScrollTo`. |
+| [Frameworks](https://samline.github.io/scroll-to/docs/guides/frameworks/)         | React, Vue, Svelte, Astro and client-side routers.                                       |
 
 ## Changelog
 

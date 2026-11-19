@@ -5,7 +5,7 @@ description: How @samline/scroll-to keeps focus, history and reduced motion righ
 locale: en
 sidebar:
   group: guides
-  order: 4
+  order: 5
   label: Accessibility
 ---
 

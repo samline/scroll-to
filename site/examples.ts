@@ -245,4 +245,106 @@ document.addEventListener('scroll-to:end', event => {
 })`,
     },
   },
+  {
+    id: 'stacked',
+    tab: 'Stacked bars',
+    title: 'Clear a header and the bar stuck below it',
+    description:
+      "offset: 'auto' finds every fixed and sticky bar stuck at the top and keeps space for all of them, measured on every frame. Hide the notice bar and the links land higher, with no change to the code.",
+    files: {
+      html: `<header id="header">
+  <nav>
+    <a href="#plans">Plans</a>
+    <a href="#faq">FAQ</a>
+    <a href="#contact">Contact</a>
+  </nav>
+  <button type="button" id="toggle" aria-pressed="true">Notice bar</button>
+</header>
+<main>
+  <section id="intro"><h2>Intro</h2></section>
+  <div class="notice" id="notice">Free shipping this week</div>
+${sections(['plans', 'faq', 'contact'])}
+</main>`,
+      css: `body { margin: 0; font-family: system-ui, sans-serif; }
+header { position: fixed; inset: 0 0 auto; z-index: 2; box-sizing: border-box; height: 3.5rem; display: flex; justify-content: space-between; align-items: center; padding: 0 1.5rem; background: #fff; border-bottom: 1px solid #ddd; }
+nav { display: flex; gap: 1rem; }
+main { padding-top: 3.5rem; padding-bottom: 50vh; }
+.notice { position: sticky; top: 3.5rem; z-index: 1; padding: 0.5rem 1.5rem; background: #fff6c2; }
+section { min-height: 70vh; padding: 0 1.5rem; border-top: 1px solid #ddd; }
+section:focus { outline: none; }`,
+      js: `ScrollTo.auto({ offset: 'auto' })
+
+const toggle = document.querySelector('#toggle')
+const notice = document.querySelector('#notice')
+
+toggle.addEventListener('click', () => {
+  notice.hidden = !notice.hidden
+  toggle.setAttribute('aria-pressed', String(!notice.hidden))
+})`,
+      esm: `import { autoScrollTo } from '@samline/scroll-to'
+
+autoScrollTo({ offset: 'auto' })
+
+const toggle = document.querySelector('#toggle')
+const notice = document.querySelector('#notice')
+
+toggle.addEventListener('click', () => {
+  notice.hidden = !notice.hidden
+  toggle.setAttribute('aria-pressed', String(!notice.hidden))
+})`,
+    },
+  },
+  {
+    id: 'pages',
+    tab: 'Page a strip',
+    title: 'Page through a strip, with any easing',
+    description:
+      "{ left: '+=100%' } moves the strip by its own width, wherever it is. speed keeps the pace steady and maxDuration caps it; pick an easing, including a CSS cubic-bezier() curve.",
+    files: {
+      html: `<div class="pager">
+  <button type="button" id="prev">Previous</button>
+  <label>Easing
+    <select id="easing">
+    <option value="ease-in-out">Ease in-out</option>
+    <option value="ease-out-quint">Ease out quint</option>
+    <option value="ease-out-back">Ease out back</option>
+    <option value="cubic-bezier(0.2, 0.8, 0.2, 1)">cubic-bezier(0.2, 0.8, 0.2, 1)</option>
+    <option value="linear">Linear</option>
+    </select>
+  </label>
+  <button type="button" id="next">Next</button>
+</div>
+<div class="strip" id="strip">
+${Array.from({ length: 12 }, (_, i) => `  <article>Card ${i + 1}</article>`).join('\n')}
+</div>`,
+      css: `body { font-family: system-ui, sans-serif; }
+.pager { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin-bottom: 0.75rem; }
+.strip { display: flex; gap: 1rem; max-width: 40rem; overflow-x: auto; padding: 0.5rem; border: 1px solid #ddd; }
+.strip article { flex: 0 0 12rem; height: 8rem; display: grid; place-items: center; border-radius: 0.5rem; background: #f4ede6; }`,
+      js: `const strip = document.querySelector('#strip')
+const easing = document.querySelector('#easing')
+
+const page = direction =>
+  ScrollTo.scrollTo(
+    { left: \`\${direction}=100%\` },
+    { container: strip, easing: easing.value, speed: 1500, maxDuration: 900 }
+  )
+
+document.querySelector('#prev').addEventListener('click', () => page('-'))
+document.querySelector('#next').addEventListener('click', () => page('+'))`,
+      esm: `import { scrollTo } from '@samline/scroll-to'
+
+const strip = document.querySelector('#strip')
+const easing = document.querySelector('#easing')
+
+const page = direction =>
+  scrollTo(
+    { left: \`\${direction}=100%\` },
+    { container: strip, easing: easing.value, speed: 1500, maxDuration: 900 }
+  )
+
+document.querySelector('#prev').addEventListener('click', () => page('-'))
+document.querySelector('#next').addEventListener('click', () => page('+'))`,
+    },
+  },
 ]

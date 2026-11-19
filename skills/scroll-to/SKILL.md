@@ -1,18 +1,20 @@
 ---
 name: scroll-to
 description: Use @samline/scroll-to for smooth scrolling to anchors, elements and positions with fixed header offsets, alignment, easing, focus and history, in vanilla JS, any framework or plain HTML.
-package-version: '1.1.0'
+package-version: '1.2.0'
 ---
 
 # @samline/scroll-to
 
-Build against the installed version; this skill describes 1.1.0.
+Build against the installed version; this skill describes 1.2.0.
 
-- **Install:** `npm install @samline/scroll-to`. Plain HTML: load `https://cdn.jsdelivr.net/npm/@samline/scroll-to@1.1.0/dist/browser/scroll-to.global.js`; it handles same-page `#id` links and `[data-scroll-to]` on its own (`data-manual` on the script tag, then `ScrollTo.auto(options)`, to pass options). No stylesheet.
+- **Install:** `npm install @samline/scroll-to`. Plain HTML: load `https://cdn.jsdelivr.net/npm/@samline/scroll-to@1.2.0/dist/browser/scroll-to.global.js`; it handles same-page `#id` links and `[data-scroll-to]` on its own (`data-manual` on the script tag, then `ScrollTo.auto(options)`, to pass options). No stylesheet.
 - **Markup:** plain `<a href="#id">` links, or any element with `data-scroll-to="#id" | selector | top`. Per-trigger attributes: `data-scroll-to-offset`, `-container`, `-block`, `-inline`, `-duration`.
 - **Script:** `autoScrollTo({ offset, container, block, inline, duration, easing, behavior, interruptible, focus, hash, signal, onStart, onProgress, onEnd, selector, scope, initialHash })` returns `{ destroy }`; `await scrollTo(target, options)` resolves `true` on arrival, `false` when interrupted or replaced; `scrollPosition(target, options)` measures only; `cancelScroll(container)`; `isScrolling(container)`.
 - **Lifecycle:** `onStart(detail)`, `onProgress({ progress, eased, ...detail })`, `onEnd({ arrived, reason, ...detail })` with `detail = { target, container, trigger, top, left }`; `reason` is `arrived | interrupted | replaced | cancelled | missing`, and `onEnd` runs exactly once (after focus/hash). `signal: AbortSignal` stops it (`cancelled`). Bubbling `scroll-to:start` / `scroll-to:end` events on the target (or the scrolling element for positions/missing). `data-scroll-to-state="scrolling"` on `<html>`/the container and the clicked trigger while running; `isScrolling(container)` tells scripted scrolls from the visitor's.
 - **Defaults:** `createScrollTo(defaults)` returns `{ to, position, cancel, isScrolling, auto, destroy }`; per-call options replace defaults key by key; `destroy()` (idempotent) stops only its own scrolls and `auto()` controllers.
+- **Aim:** `offset` also takes `'auto'` (fixed elements at the top edge and anything stuck below them, plus sticky elements with a `top` that precede the target as siblings of it or its ancestors, counted at their stuck position; ignores elements taller than half the container), `'css'` (container `scroll-padding-top` + target `scroll-margin-top`), a function `({ container, target }) => px`, or an array (summed); offsets apply to elements only. Targets: `'bottom'`, `'+=400'`/`'-=50%'` (% of container height, fixed at start), `{ top, left }` points (`left: '+=100%'` pages a strip). `when: 'needed'` skips the move if the element is fully visible (still `arrived`, focus/hash run).
+- **Timing:** `duration` number wins; else `speed` (px/s) or the auto rule (distance/2, 300–1000 ms); `maxDuration` caps auto/speed. `easing`: `linear`, `ease-in`, `ease-out`, `ease-in-out`, `ease-out-quint`, `ease-out-back`, `'cubic-bezier(x1,y1,x2,y2)'` (x within 0–1) or a function; `cubicBezier()` is exported. Attributes `data-scroll-to-speed`, `-easing`, `-when`; `-offset` accepts `auto`/`css`.
 - **Semantics:** `offset` takes px, `%` or an element/selector whose height is used; destination re-measured each frame; wheel/touch/key interrupts; reduced motion jumps. `autoScrollTo` defaults to `focus: true` and `hash: 'push'`; plain `scrollTo` changes neither unless asked.
-- **Layouts:** pass `container` for scrolling boxes and `inline: 'center', block: 'nearest'` to center tabs in a strip; add `scroll-padding-top` in CSS for jumps the script does not handle.
+- **Layouts:** pass `container` for scrolling boxes and `inline: 'center', block: 'nearest'` to center tabs in a strip; add `scroll-padding-top` in CSS for jumps the script does not handle, and pass `offset: 'css'` so the script reads the same value instead of duplicating it.
 - **Do not** poll `scrollY` to detect the end of a scroll (use `onEnd` or `scroll-to:end`), or wrap `scrollTo` in a timeout to cancel it (use `signal`). **Do not** add another click handler that calls `scrollIntoView` on the same links, compute offsets with `offsetTop` yourself, or use `<span>` click targets where a link works.

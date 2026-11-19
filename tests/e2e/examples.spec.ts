@@ -104,4 +104,34 @@ test.describe('scroll-to copyable examples', () => {
     await expect(page.locator('html')).not.toHaveAttribute('data-scroll-to-state', /.*/)
     await expect(page.locator('#plans')).toBeFocused()
   })
+
+  test("offset 'auto' clears the header and the stuck notice, and adapts when it hides", async ({
+    page,
+  }) => {
+    await openDocument(page, find(scrollToExamples, 'stacked'))
+    const header = await page.locator('#header').evaluate(el => el.offsetHeight)
+    const notice = await page.locator('#notice').evaluate(el => el.offsetHeight)
+    await page.getByRole('link', { name: 'FAQ' }).click()
+    await expect.poll(() => top(page, '#faq')).toBe(header + notice)
+    await expect(page.locator('#faq')).toBeFocused()
+
+    await page.locator('#toggle').click()
+    await expect(page.locator('#toggle')).toHaveAttribute('aria-pressed', 'false')
+    await page.getByRole('link', { name: 'Contact' }).click()
+    await expect.poll(() => top(page, '#contact')).toBe(header)
+  })
+
+  test('the strip moves one page per click with the chosen easing', async ({ page }) => {
+    await openDocument(page, find(scrollToExamples, 'pages'))
+    const strip = page.locator('#strip')
+    const width = await strip.evaluate(el => el.clientWidth)
+    await page.locator('#easing').selectOption('cubic-bezier(0.2, 0.8, 0.2, 1)')
+    await page.locator('#next').click()
+    await expect.poll(() => strip.evaluate(el => Math.round(el.scrollLeft))).toBe(width)
+    await page.locator('#easing').selectOption('ease-out-back')
+    await page.locator('#next').click()
+    await expect.poll(() => strip.evaluate(el => Math.round(el.scrollLeft))).toBe(width * 2)
+    await page.locator('#prev').click()
+    await expect.poll(() => strip.evaluate(el => Math.round(el.scrollLeft))).toBe(width)
+  })
 })

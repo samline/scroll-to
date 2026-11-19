@@ -1,7 +1,19 @@
-export { ATTRIBUTE, EASINGS, END_REASONS, EVENTS, STATE_ATTRIBUTE } from './scroll-to.js'
+export {
+  ATTRIBUTE,
+  EASINGS,
+  END_REASONS,
+  EVENTS,
+  STATE_ATTRIBUTE,
+  cubicBezier,
+} from './scroll-to.js'
 export type {
   Align,
   Easing,
+  EasingValue,
+  OffsetContext,
+  OffsetValue,
+  ScrollCoordinate,
+  ScrollPoint,
   ScrollTarget,
   ScrollToOptions,
   AutoScrollToOptions,

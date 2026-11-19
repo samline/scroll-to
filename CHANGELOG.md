@@ -2,6 +2,26 @@
 
 All notable changes to this package. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow [semver](https://semver.org/).
 
+## [1.2.0] - 2026-11-18
+
+### Added
+
+- `offset: 'auto'` keeps space for what will cover the top of the container once the target arrives: fixed elements at the top edge and anything stuck below them, and sticky elements with a `top` that come before the target, even when they are not stuck yet. Measured on every frame. Elements taller than half of the container (overlays, backdrops) are ignored.
+- `offset: 'css'` reads the container's `scroll-padding-top` and the target's `scroll-margin-top`, so the CSS that aligns the browser's own jumps also aligns the script's.
+- `offset` takes a function, `({ container, target }) => number`, and an array of offsets that are added up, such as `['#header', 16]`.
+- Targets: `'bottom'`, relative positions (`'+=400'`, `'-=50%'`, a percentage of the container height) fixed when the scroll starts, and points on both axes (`{ top, left }`, with `{ left: '+=100%' }` to page through a strip).
+- `when: 'needed'` does not move when the target element is already fully visible below the offset; it still resolves to `true`, moves focus and writes the hash.
+- `speed` (pixels per second) and `maxDuration` for `'auto'` durations.
+- Easing: `'cubic-bezier(x1, y1, x2, y2)'` strings, the `cubicBezier()` function, and the `ease-in`, `ease-out-quint` and `ease-out-back` curves.
+- Trigger attributes `data-scroll-to-speed`, `data-scroll-to-easing` and `data-scroll-to-when`; `data-scroll-to-offset` accepts `auto` and `css`, and `data-scroll-to` accepts `bottom` and relative positions.
+- Types: `ScrollPoint`, `ScrollCoordinate`, `OffsetValue`, `OffsetContext` and `EasingValue`.
+- Documentation: an Aim and timing guide, and two examples, Stacked bars and Page a strip.
+
+### Changed
+
+- An invalid selector as `offset` counts as `0` instead of throwing.
+- Size budgets: 4.2 KB gzip for the package and 4.3 KB for the browser bundle (from 3.2 and 3.3 KB).
+
 ## [1.1.0] - 2026-11-18
 
 ### Added

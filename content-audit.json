@@ -1,6 +1,6 @@
 {
   "status": "verified",
-  "packageVersion": "1.1.0",
+  "packageVersion": "1.2.0",
   "capabilityReview": {
     "status": "verified",
     "integrations": [
@@ -53,6 +53,18 @@
         "evidence": "test/lifecycle.test.ts (events and state), tests/e2e/examples.spec.ts",
         "destination": "site/examples/events.astro",
         "reviewed": true
+      },
+      {
+        "name": "Stacked fixed and sticky bars (offset 'auto')",
+        "evidence": "test/precision.test.ts (offset), tests/e2e/scroll-to.spec.ts, tests/e2e/examples.spec.ts",
+        "destination": "site/examples/stacked.astro",
+        "reviewed": true
+      },
+      {
+        "name": "Page a strip (relative points, speed, cubic-bezier easing)",
+        "evidence": "test/precision.test.ts (targets, duration, easing), tests/e2e/examples.spec.ts",
+        "destination": "site/examples/pages.astro",
+        "reviewed": true
       }
     ],
     "onboarding": {
@@ -68,7 +80,7 @@
   "sources": [
     {
       "source": "README.md",
-      "sha256": "f9691f107aa486e445c9199e431248abdbd2b0147a347f7b0727f1f8c311175e",
+      "sha256": "0f60c6dbbd36eb6083cd463a0254325744da4d372b3bd7e790a59dd299a1c9cf",
       "destination": "docs/src/content/docs/index.mdx",
       "reviewed": true
     },
@@ -80,13 +92,13 @@
     },
     {
       "source": "src/core/scroll-to.ts",
-      "sha256": "3e5cbd994cb2eb9182efbb560993df802ad20d42c6f99ed7e1f55339fef7077b",
+      "sha256": "3a19b303e56d523b6b6ac0968f9ba9681b8535d435842f9c0241e1d3371def0a",
       "destination": "docs/src/content/docs/reference/api.md",
       "reviewed": true
     },
     {
       "source": "src/core/index.ts",
-      "sha256": "91c06eb4927972b8543dddedb7337b34860adb84dafeb13e353aaf73542234b2",
+      "sha256": "c4becd3bfef56d45769d18683f8ce7e92335f62ba5d9723b7daa8e3e094477c2",
       "destination": "docs/src/content/docs/reference/api.md",
       "reviewed": true
     },
@@ -104,32 +116,44 @@
     },
     {
       "source": "src/core/scroll-to.ts",
-      "sha256": "3e5cbd994cb2eb9182efbb560993df802ad20d42c6f99ed7e1f55339fef7077b",
+      "sha256": "3a19b303e56d523b6b6ac0968f9ba9681b8535d435842f9c0241e1d3371def0a",
       "destination": "docs/src/content/docs/reference/configuration.md",
       "reviewed": true
     },
     {
       "source": "src/core/scroll-to.ts",
-      "sha256": "3e5cbd994cb2eb9182efbb560993df802ad20d42c6f99ed7e1f55339fef7077b",
+      "sha256": "3a19b303e56d523b6b6ac0968f9ba9681b8535d435842f9c0241e1d3371def0a",
       "destination": "docs/src/content/docs/guides/layouts.md",
       "reviewed": true
     },
     {
       "source": "src/core/scroll-to.ts",
-      "sha256": "3e5cbd994cb2eb9182efbb560993df802ad20d42c6f99ed7e1f55339fef7077b",
+      "sha256": "3a19b303e56d523b6b6ac0968f9ba9681b8535d435842f9c0241e1d3371def0a",
       "destination": "docs/src/content/docs/guides/frameworks.md",
       "reviewed": true
     },
     {
       "source": "src/vanilla/scroll-to.ts",
-      "sha256": "75aa49ecf4209bea96cc5645798bd78bd828a91903587dc08f85622eff0b90c2",
+      "sha256": "1bef859a516cb8374396fc4d4add7a4d78dcc475557f49b350537a37a7758256",
       "destination": "docs/src/content/docs/guides/lifecycle.md",
       "reviewed": true
     },
     {
       "source": "src/core/scroll-to.ts",
-      "sha256": "3e5cbd994cb2eb9182efbb560993df802ad20d42c6f99ed7e1f55339fef7077b",
+      "sha256": "3a19b303e56d523b6b6ac0968f9ba9681b8535d435842f9c0241e1d3371def0a",
       "destination": "docs/src/content/docs/guides/lifecycle.md",
+      "reviewed": true
+    },
+    {
+      "source": "src/vanilla/scroll-to.ts",
+      "sha256": "1bef859a516cb8374396fc4d4add7a4d78dcc475557f49b350537a37a7758256",
+      "destination": "docs/src/content/docs/guides/aim-and-timing.md",
+      "reviewed": true
+    },
+    {
+      "source": "src/core/scroll-to.ts",
+      "sha256": "3a19b303e56d523b6b6ac0968f9ba9681b8535d435842f9c0241e1d3371def0a",
+      "destination": "docs/src/content/docs/guides/aim-and-timing.md",
       "reviewed": true
     }
   ],
@@ -140,7 +164,7 @@
       "reviewed": true
     },
     {
-      "source": "ScrollTarget, ScrollToController, ScrollToInstance, ScrollDetail, ScrollProgress, ScrollResult, ScrollEndReason, Align, Easing, EASINGS, EVENTS, END_REASONS, STATE_ATTRIBUTE",
+      "source": "ScrollTarget, ScrollToController, ScrollToInstance, ScrollDetail, ScrollProgress, ScrollResult, ScrollEndReason, Align, Easing, EASINGS, EVENTS, END_REASONS, STATE_ATTRIBUTE, cubicBezier, ScrollPoint, ScrollCoordinate, OffsetValue, OffsetContext, EasingValue",
       "destination": "docs/src/content/docs/reference/api.md",
       "reviewed": true
     },
@@ -163,7 +187,12 @@
       "source": "scroll-to:start, scroll-to:end events and data-scroll-to-state",
       "destination": "docs/src/content/docs/guides/lifecycle.md",
       "reviewed": true
+    },
+    {
+      "source": "offset 'auto' and 'css', relative targets, when, speed, maxDuration, cubic-bezier easing",
+      "destination": "docs/src/content/docs/guides/aim-and-timing.md",
+      "reviewed": true
     }
   ],
-  "notes": "Content reviewed in the utils collection site (1.0.0), then moved to this repository's standalone site on 2026-11-14. Source hashes were recomputed against @samline/scroll-to@1.1.0, which added the lifecycle guide and the progress and events examples."
+  "notes": "Content reviewed in the utils collection site (1.0.0), then moved to this repository's standalone site on 2026-11-14. 1.1.0 added the lifecycle guide and the progress and events examples; 1.2.0 added the aim and timing guide and the stacked and pages examples. Source hashes were recomputed against @samline/scroll-to@1.2.0."
 }

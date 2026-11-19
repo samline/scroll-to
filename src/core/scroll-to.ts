@@ -4,7 +4,39 @@
 export const ALIGNS = ['start', 'center', 'end', 'nearest'] as const
 export type Align = (typeof ALIGNS)[number]
 export type Easing = (progress: number) => number
-export type ScrollTarget = Element | string | number
+/** A named easing from `EASINGS`, a CSS `cubic-bezier(x1, y1, x2, y2)` string or a function. */
+export type EasingValue = keyof typeof EASINGS | `cubic-bezier(${string})` | Easing
+
+/**
+ * A position on either axis: pixels from the start (`400`), or relative to
+ * where the container is now (`'+=400'`, `'-=50%'`, a percentage of its size).
+ */
+export type ScrollCoordinate = number | `+=${string}` | `-=${string}`
+/** A position on both axes. A missing axis stays where it is. */
+export interface ScrollPoint {
+  top?: ScrollCoordinate
+  left?: ScrollCoordinate
+}
+/**
+ * An element, an `#id`, a selector, `'top'`, `'bottom'`, a vertical position
+ * (`400`, `'+=400'`, `'-=50%'`) or a point on both axes (`{ top, left }`).
+ */
+export type ScrollTarget = Element | string | number | ScrollPoint
+
+/** Passed to a function `offset`. */
+export interface OffsetContext {
+  /** What scrolls: the page (`window`) or an element. */
+  container: Element | Window
+  /** The target element. */
+  target: Element
+}
+/**
+ * One part of an offset: pixels, `'80px'`, a percentage of the container
+ * height, an element or selector whose height is used, `'auto'` (fixed and
+ * sticky elements stuck at the top), `'css'` (`scroll-padding-top` and
+ * `scroll-margin-top`) or a function.
+ */
+export type OffsetValue = number | string | Element | ((context: OffsetContext) => number)
 
 export interface ScrollToOptions {
   /**
@@ -14,21 +46,36 @@ export interface ScrollToOptions {
   container?: Element | Window | string | null
   /**
    * Space kept above the target, for fixed headers: pixels (`80`), a
-   * percentage of the container height (`'10%'`), or an element or selector
-   * whose height is used (`'#header'`). Defaults to `0`.
+   * percentage of the container height (`'10%'`), an element or selector
+   * whose height is used (`'#header'`), `'auto'` to measure fixed and sticky
+   * elements stuck at the top, `'css'` to use `scroll-padding-top` and
+   * `scroll-margin-top`, a function, or an array of these, added up.
+   * Defaults to `0`.
    */
-  offset?: number | string | Element
+  offset?: OffsetValue | readonly OffsetValue[]
   /** Vertical alignment. Defaults to `'start'`. */
   block?: Align
   /** Horizontal alignment. Defaults to `'nearest'`. */
   inline?: Align
   /**
    * Duration in milliseconds, or `'auto'` to scale with the distance
-   * (300–1000 ms). Defaults to `'auto'`.
+   * (300–1000 ms, or from `speed`). Defaults to `'auto'`.
    */
   duration?: number | 'auto'
-  /** A name (`'ease-in-out'`, `'ease-out'`, `'linear'`) or a function. Defaults to `'ease-in-out'`. */
-  easing?: keyof typeof EASINGS | Easing
+  /** Pixels per second, for an `'auto'` duration that grows with the distance. */
+  speed?: number
+  /** The longest an `'auto'` duration can be, in milliseconds. Defaults to `1000` without `speed`. */
+  maxDuration?: number
+  /**
+   * A name from `EASINGS`, a CSS `'cubic-bezier(x1, y1, x2, y2)'` string or a
+   * function. Defaults to `'ease-in-out'`.
+   */
+  easing?: EasingValue
+  /**
+   * `'needed'` does not move when the target element is already fully
+   * visible below the offset. Defaults to `'always'`.
+   */
+  when?: 'always' | 'needed'
   /** `'instant'` jumps. Reduced motion always jumps. Defaults to `'smooth'`. */
   behavior?: 'smooth' | 'instant'
   /** Stop when the visitor scrolls, touches or presses a key. Defaults to `true`. */
@@ -122,8 +169,71 @@ export const EVENTS = { start: 'scroll-to:start', end: 'scroll-to:end' } as cons
 
 export const EASINGS = {
   linear: (t: number) => t,
+  'ease-in': (t: number) => t ** 3,
   'ease-out': (t: number) => 1 - (1 - t) ** 3,
   'ease-in-out': (t: number) => (t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2),
+  'ease-out-quint': (t: number) => 1 - (1 - t) ** 5,
+  /** Overshoots a little and settles back. */
+  'ease-out-back': (t: number) => 1 + 2.70158 * (t - 1) ** 3 + 1.70158 * (t - 1) ** 2,
+}
+
+/** The easing of a CSS `cubic-bezier(x1, y1, x2, y2)`; `x1` and `x2` must be within 0–1. */
+export const cubicBezier = (x1: number, y1: number, x2: number, y2: number): Easing => {
+  // One axis of the curve at t, from 0 to 1.
+  const at = (t: number, p1: number, p2: number) =>
+    3 * p1 * t * (1 - t) ** 2 + 3 * p2 * t ** 2 * (1 - t) + t ** 3
+  return progress => {
+    if (progress <= 0) return 0
+    if (progress >= 1) return 1
+    // x grows with t when x1 and x2 are within 0–1, so bisection finds it.
+    let low = 0
+    let high = 1
+    while (high - low > 1e-5) {
+      const t = (low + high) / 2
+      if (at(t, x1, x2) < progress) low = t
+      else high = t
+    }
+    return at((low + high) / 2, y1, y2)
+  }
+}
+
+/** The easing function for an `easing` option; unknown values use `'ease-in-out'`. */
+export const parseEasing = (easing: ScrollToOptions['easing']): Easing => {
+  if (typeof easing === 'function') return easing
+  const name = String(easing ?? '').trim()
+  if (Object.prototype.hasOwnProperty.call(EASINGS, name)) {
+    return EASINGS[name as keyof typeof EASINGS]
+  }
+  const values = /^cubic-bezier\(([^)]*)\)$/
+    .exec(name)?.[1]
+    ?.split(',')
+    .map(value => (value.trim() ? Number(value) : NaN))
+  if (values?.length === 4 && values.every(Number.isFinite)) {
+    const [x1, y1, x2, y2] = values as [number, number, number, number]
+    if (x1 >= 0 && x1 <= 1 && x2 >= 0 && x2 <= 1) return cubicBezier(x1, y1, x2, y2)
+  }
+  return EASINGS['ease-in-out']
+}
+
+/** How long a scroll of `distance` pixels lasts, in milliseconds. */
+export const durationFor = (
+  distance: number,
+  { duration, speed, maxDuration }: Pick<ScrollToOptions, 'duration' | 'speed' | 'maxDuration'>
+): number => {
+  if (typeof duration === 'number') return Math.max(0, duration)
+  if (speed && speed > 0) return Math.min(maxDuration ?? Infinity, (distance / speed) * 1000)
+  return Math.max(0, Math.min(maxDuration ?? 1000, Math.max(300, distance / 2)))
+}
+
+/**
+ * A relative position (`'+=400'`, `'-=25%'`) from `current`, with
+ * percentages of `size`; `null` when `value` is not relative.
+ */
+export const relativeTo = (value: string, current: number, size: number): number | null => {
+  const match = /^([+-])=\s*(\d*\.?\d+)(px|%)?$/.exec(value.trim())
+  if (!match) return null
+  const amount = parseFloat(match[2]!) * (match[3] === '%' ? size / 100 : 1)
+  return current + (match[1] === '-' ? -amount : amount)
 }
 
 export const INTERRUPTIONS = ['wheel', 'touchstart', 'keydown', 'mousedown'] as const

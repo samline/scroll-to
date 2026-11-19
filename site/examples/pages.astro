@@ -1,0 +1,97 @@
+---
+import './_shared.css'
+
+const easings = [
+  ['ease-in-out', 'Ease in-out'],
+  ['ease-out-quint', 'Ease out quint'],
+  ['ease-out-back', 'Ease out back'],
+  ['cubic-bezier(0.2, 0.8, 0.2, 1)', 'cubic-bezier(0.2, 0.8, 0.2, 1)'],
+  ['linear', 'Linear'],
+]
+---
+
+<div class="preview scroll-to-example">
+  <div class="pager">
+    <button type="button" class="pill" data-prev>Previous</button>
+    <label>
+      Easing
+      <select data-easing>
+        {easings.map(([value, label]) => <option value={value}>{label}</option>)}
+      </select>
+    </label>
+    <button type="button" class="pill" data-next>Next</button>
+  </div>
+  <div class="pages-strip" data-preview="pages" tabindex="0" aria-label="Cards">
+    {Array.from({ length: 12 }, (_, i) => <article>Card {i + 1}</article>)}
+  </div>
+</div>
+
+<script>
+  import { cancelScroll, scrollTo, type EasingValue } from '@samline/scroll-to'
+  import { preview } from '../../shared/lib/preview'
+
+  preview('pages', stage => {
+    const strip = stage.querySelector<HTMLElement>('[data-preview="pages"]')!
+    const root = strip.closest('.preview')!
+    const easing = root.querySelector<HTMLSelectElement>('[data-easing]')!
+
+    // Move by the strip's own width, from wherever it is now.
+    const page = (direction: '+' | '-') =>
+      scrollTo(
+        { left: `${direction}=100%` },
+        {
+          container: strip,
+          easing: easing.value as EasingValue,
+          speed: 1500,
+          maxDuration: 900,
+        }
+      )
+
+    root.querySelector('[data-prev]')!.addEventListener('click', () => page('-'))
+    root.querySelector('[data-next]')!.addEventListener('click', () => page('+'))
+
+    return () => cancelScroll(strip)
+  })
+</script>
+
+<style>
+  .pager {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    font-size: 0.875rem;
+    color: var(--color-text-subtle);
+  }
+  .pager label {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  .pager select {
+    font: inherit;
+    color: var(--color-text);
+    background: var(--color-bg);
+    border: 0.0625rem solid var(--color-border);
+    border-radius: var(--radius-control);
+    padding: 0.25rem 0.5rem;
+  }
+  .pages-strip {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding: 0.75rem;
+    border: 0.0625rem solid var(--color-border);
+    border-radius: var(--radius-control);
+  }
+  .pages-strip article {
+    flex: 0 0 11rem;
+    height: 7rem;
+    display: grid;
+    place-items: center;
+    border-radius: var(--radius-control);
+    background: color-mix(in srgb, var(--color-accent) 12%, var(--color-bg));
+    color: var(--color-text);
+    font-size: 0.875rem;
+  }
+</style>

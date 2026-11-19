@@ -41,7 +41,7 @@ See [Lifecycle and events](../../guides/lifecycle/) for every callback, end reas
 scrollPosition(target, options?): { top: number; left: number } | null
 ```
 
-Where the container would scroll to, clamped to what it can scroll, without moving. `null` when the target does not exist or there is no DOM.
+Where the container would scroll to, clamped to what it can scroll, without moving. `null` when the target does not exist or there is no DOM. It takes the same targets and options as `scrollTo`: with `when: 'needed'` and a visible target, it returns the current position.
 
 ## cancelScroll(container?)
 
@@ -130,11 +130,26 @@ interface ScrollResult extends ScrollDetail {
 
 ## EASINGS
 
-The named easing functions: `linear`, `ease-out` and `ease-in-out`. Pass your own function as `easing` for anything else.
+The named easing functions: `linear`, `ease-in`, `ease-out`, `ease-in-out`, `ease-out-quint` and `ease-out-back`. Pass a `'cubic-bezier(x1, y1, x2, y2)'` string or your own function as `easing` for anything else.
+
+## cubicBezier(x1, y1, x2, y2)
+
+```ts
+cubicBezier(x1: number, y1: number, x2: number, y2: number): (progress: number) => number
+```
+
+The easing function of a CSS `cubic-bezier()` curve, the same one the `'cubic-bezier(…)'` string builds. `x1` and `x2` must be within 0–1; `y1` and `y2` can overshoot.
+
+```js
+import { cubicBezier, scrollTo } from '@samline/scroll-to'
+
+const brand = cubicBezier(0.2, 0.8, 0.2, 1)
+scrollTo('#faq', { easing: brand })
+```
 
 ## Types and constants
 
-`ScrollToOptions`, `AutoScrollToOptions`, `ScrollToController`, `ScrollToInstance`, `ScrollTarget`, `ScrollDetail`, `ScrollProgress`, `ScrollResult`, `ScrollEndReason`, `Align` and `Easing`.
+`ScrollToOptions`, `AutoScrollToOptions`, `ScrollToController`, `ScrollToInstance`, `ScrollTarget`, `ScrollPoint`, `ScrollCoordinate`, `OffsetValue`, `OffsetContext`, `EasingValue`, `ScrollDetail`, `ScrollProgress`, `ScrollResult`, `ScrollEndReason`, `Align` and `Easing`.
 
 | Constant                                                                             | Value                                                            |
 | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------- |

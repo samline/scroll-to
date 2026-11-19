@@ -1,0 +1,83 @@
+---
+import './_shared.css'
+
+const parts = ['Plans', 'FAQ', 'Contact']
+---
+
+<div class="preview scroll-to-example">
+  <div class="box" data-preview="stacked" tabindex="0" aria-label="Scrollable page">
+    <div class="bar stacked-bar">
+      <nav aria-label="Stacked example sections">
+        {parts.map(part => <a href={`#scroll-to-stacked-${part.toLowerCase()}`}>{part}</a>)}
+      </nav>
+      <button type="button" class="pill" aria-pressed="true" data-toggle>Notice bar</button>
+    </div>
+    <section>
+      <p class="part-title">Intro</p>
+      <p>Scroll down: the notice sticks below the bar.</p>
+    </section>
+    <p class="notice" data-notice>Free shipping this week</p>
+    {parts.map(part => (
+      <section id={`scroll-to-stacked-${part.toLowerCase()}`}>
+        <p class="part-title">{part}</p>
+        <p>Lands below the bar and the notice, or just the bar when the notice is hidden.</p>
+      </section>
+    ))}
+  </div>
+</div>
+
+<script>
+  import { autoScrollTo } from '@samline/scroll-to'
+  import { preview } from '../../shared/lib/preview'
+
+  preview('stacked', stage => {
+    const box = stage.querySelector<HTMLElement>('[data-preview="stacked"]')!
+    const toggle = box.querySelector<HTMLButtonElement>('[data-toggle]')!
+    const notice = box.querySelector<HTMLElement>('[data-notice]')!
+
+    toggle.addEventListener('click', () => {
+      notice.hidden = !notice.hidden
+      toggle.setAttribute('aria-pressed', String(!notice.hidden))
+    })
+
+    // 'auto' finds the sticky bar and the notice stuck below it, inside this box.
+    return autoScrollTo({
+      scope: box,
+      container: box,
+      offset: 'auto',
+      hash: false,
+      initialHash: false,
+    })
+  })
+</script>
+
+<style>
+  .stacked-bar {
+    box-sizing: border-box;
+    height: 3rem;
+    padding-block: 0;
+    justify-content: space-between;
+  }
+  .stacked-bar nav {
+    display: flex;
+    gap: 1rem;
+  }
+  .stacked-bar a {
+    color: var(--color-text-subtle);
+  }
+  .stacked-bar .pill[aria-pressed='true'] {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+  .notice {
+    position: sticky;
+    top: 3rem;
+    z-index: 1;
+    padding: 0.5rem 1rem;
+    background: color-mix(in srgb, var(--color-accent) 14%, var(--color-bg));
+    color: var(--color-text);
+  }
+  .notice[hidden] {
+    display: none;
+  }
+</style>

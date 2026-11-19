@@ -160,3 +160,104 @@ test('an AbortSignal stops the scroll', async ({ load, page }) => {
   expect(result.y).toBeGreaterThan(0)
   expect(result.y).toBeLessThan(1700)
 })
+
+const stacked = `
+  <style>
+    body { margin: 0 }
+    header { position: fixed; inset: 0 0 auto; height: 64px; background: #fff; z-index: 2 }
+    .notice { position: sticky; top: 64px; height: 36px; background: #ffe; z-index: 1 }
+    .backdrop { position: fixed; inset: 0; pointer-events: none }
+    section { height: 900px; border-top: 1px solid; scroll-margin-top: 12px }
+    html.padded { scroll-padding-top: 80px }
+  </style>
+  <header></header>
+  <div class="backdrop"></div>
+  <div style="height: 200px"></div>
+  <div class="notice">Notice</div>
+  <section id="one">One</section>
+  <section id="two">Two</section>
+  <section id="three">Three</section>
+  <p id="tail" style="height: 20px; margin: 0">Tail</p>
+`
+
+test("offset 'auto' clears a fixed header and a sticky bar once it sticks", async ({
+  load,
+  page,
+}) => {
+  await load(stacked, 'scroll-to')
+  await page.evaluate(() =>
+    (window as any).ScrollTo.scrollTo('#two', { offset: 'auto', duration: 300 })
+  )
+  // 64px header + 36px stuck notice; the full-screen backdrop is ignored.
+  expect(await top(page, 'two')).toBe(100)
+})
+
+test("offset 'css' uses scroll-padding-top and scroll-margin-top", async ({ load, page }) => {
+  await load(stacked, 'scroll-to')
+  await page.evaluate(() => document.documentElement.classList.add('padded'))
+  await page.evaluate(() =>
+    (window as any).ScrollTo.scrollTo('#two', { offset: 'css', behavior: 'instant' })
+  )
+  expect(await top(page, 'two')).toBe(92)
+})
+
+test("'bottom', relative targets, when 'needed' and cubic-bezier easing", async ({
+  load,
+  page,
+}) => {
+  await load(stacked, 'scroll-to')
+  const result = await page.evaluate(async () => {
+    const { ScrollTo } = window as any
+    await ScrollTo.scrollTo('bottom', { easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)', duration: 300 })
+    const bottom = scrollY
+    const max = document.documentElement.scrollHeight - innerHeight
+    // The tail is in view at the bottom: nothing to do.
+    await ScrollTo.scrollTo('#tail', { when: 'needed', block: 'center' })
+    const stayed = scrollY === bottom
+    await ScrollTo.scrollTo('-=250', { duration: 200 })
+    return { bottom, max, up: scrollY, stayed }
+  })
+  expect(Math.round(result.bottom)).toBe(result.max)
+  expect(Math.round(result.up)).toBe(result.max - 250)
+  expect(result.stayed).toBe(true)
+})
+
+test("offset 'auto' counts a sticky notice that only sticks on the way, inside a box", async ({
+  load,
+  page,
+}) => {
+  await load(
+    `<style>
+      #box { height: 400px; overflow-y: auto; margin-top: 50px }
+      .bar { position: sticky; top: 0; height: 48px; background: #fff; z-index: 2 }
+      .notice { position: sticky; top: 48px; height: 36px; background: #ffe; z-index: 1 }
+      section { height: 300px; border-top: 1px solid }
+    </style>
+    <div id="box">
+      <div class="bar">Bar</div>
+      <section>Intro</section>
+      <div class="notice">Notice</div>
+      <section id="plans">Plans</section>
+      <section id="faq">FAQ</section>
+      <section>End</section>
+    </div>`,
+    'scroll-to'
+  )
+  const tops = await page.evaluate(async () => {
+    const { ScrollTo } = window as any
+    const box = document.getElementById('box')!
+    const at = (id: string) =>
+      Math.round(
+        document.getElementById(id)!.getBoundingClientRect().top - box.getBoundingClientRect().top
+      )
+    const result: number[] = []
+    for (const id of ['plans', 'faq']) {
+      box.scrollTop = 0
+      await ScrollTo.scrollTo('#' + id, { container: box, offset: 'auto', duration: 300 })
+      result.push(at(id))
+    }
+    return result
+  })
+  // 48px bar + 36px notice (WebKit may round a pixel).
+  for (const value of tops) expect(Math.abs(value - 84)).toBeLessThanOrEqual(1)
+})

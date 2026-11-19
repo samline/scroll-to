@@ -50,7 +50,7 @@ const sections = {
         icon: 'ruler',
         title: 'Offsets that stay right',
         description: text(
-          'Pixels, a percentage, or the header element itself, measured on each scroll, so a header that changes height still clears.'
+          'Pixels, the header itself, every sticky bar found for you, or your CSS scroll padding, measured on every frame.'
         ),
       },
       accessibility: {

@@ -18,6 +18,7 @@ export default {
   pageLabels: {
     'getting-started': 'Installation',
     'guides/accessibility': 'Accessibility',
+    'guides/aim-and-timing': 'Aim and timing',
     'guides/examples': 'Examples',
     'guides/frameworks': 'Framework integrations',
     'guides/layouts': 'Layouts and focus',

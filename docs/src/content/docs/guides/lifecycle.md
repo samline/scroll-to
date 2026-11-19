@@ -5,7 +5,7 @@ description: 'Follow a scroll with onStart, onProgress and onEnd, read why it en
 locale: en
 sidebar:
   group: guides
-  order: 3
+  order: 4
 ---
 
 Every scroll goes through the same steps: it **starts**, moves **frame by frame**, and **ends** exactly once. You can follow those steps three ways. Use whichever fits the code you have:
@@ -198,7 +198,7 @@ The CDN script exposes the same API on `window.ScrollTo`: `ScrollTo.isScrolling(
 
 ```html
 <script
-  src="https://cdn.jsdelivr.net/npm/@samline/scroll-to@1.1.0/dist/browser/scroll-to.global.js"
+  src="https://cdn.jsdelivr.net/npm/@samline/scroll-to@1.2.0/dist/browser/scroll-to.global.js"
   defer
 ></script>
 <script>

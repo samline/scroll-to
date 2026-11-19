@@ -15,19 +15,24 @@ import {
   type ScrollDetail,
   type ScrollEndReason,
   type ScrollResult,
+  type ScrollPoint,
+  type OffsetValue,
   ATTRIBUTE,
-  EASINGS,
   EVENTS,
   INTERRUPTIONS,
   STATE_ATTRIBUTE,
   align,
   clamp,
+  durationFor,
+  parseEasing,
+  relativeTo,
 } from '../core/scroll-to.js'
 
 interface Running {
   cancel: (reason: ScrollEndReason) => void
 }
 const running = new WeakMap<object, Running>()
+const WHEN = ['always', 'needed'] as const
 
 const resolveContainer = (container: ScrollToOptions['container']): Element | Window => {
   if (!container || container === window) return window
@@ -35,11 +40,14 @@ const resolveContainer = (container: ScrollToOptions['container']): Element | Wi
   return container as Element
 }
 
-const resolveTarget = (target: ScrollTarget): Element | number | null => {
-  if (typeof target === 'number') return target
+/** A target as an element, or as a point on both axes (positions, `'top'`, `'bottom'`, `'+=400'`). */
+const resolveTarget = (target: ScrollTarget): Element | ScrollPoint | null => {
+  if (typeof target === 'number') return { top: target }
   if (typeof target !== 'string') return target
   const value = target.trim()
-  if (value === '#' || value === '#top' || value === 'top') return 0
+  if (value === '#' || value === '#top' || value === 'top') return { top: 0 }
+  if (value === 'bottom') return { top: Infinity }
+  if (/^[+-]=/.test(value)) return { top: value as `+=${string}` }
   if (value.startsWith('#')) {
     let id = value.slice(1)
     try {
@@ -56,6 +64,10 @@ const resolveTarget = (target: ScrollTarget): Element | number | null => {
     return null
   }
 }
+
+/** The element that represents the container in the DOM: the root for the page. */
+const hostOf = (container: Element | Window): Element =>
+  container === window ? document.documentElement : (container as Element)
 
 /** The visible box of the container and how far it can scroll. */
 const viewport = (container: Element | Window) => {
@@ -86,15 +98,97 @@ const viewport = (container: Element | Window) => {
   }
 }
 
-const resolveOffset = (offset: ScrollToOptions['offset'], height: number): number => {
+type View = ReturnType<typeof viewport>
+
+/** A CSS length in pixels, with percentages of `size`; `0` for `auto` and the unknown. */
+const cssLength = (value: string, size: number) =>
+  (value.trim().endsWith('%') ? (size * parseFloat(value)) / 100 : parseFloat(value)) || 0
+
+/** `scroll-padding-top` of the container plus `scroll-margin-top` of the target. */
+const cssOffset = (container: Element | Window, target: Element, height: number) =>
+  cssLength(getComputedStyle(hostOf(container)).getPropertyValue('scroll-padding-top'), height) +
+  cssLength(getComputedStyle(target).getPropertyValue('scroll-margin-top'), height)
+
+/**
+ * How far fixed and sticky elements reach into the top of the container once
+ * the target arrives. Sticky elements that come before the target (siblings
+ * of it or of its ancestors) stick at their `top` by then, even when they are
+ * not stuck yet. Fixed ones, and whatever is stuck below them, are found at
+ * the top edge. Elements taller than half of the container are ignored.
+ */
+const stuckOffset = (container: Element | Window, view: View, target: Element) => {
+  const host = hostOf(container)
+  const limit = view.height / 2
+  let reach = view.top
+  for (let node: Element | null = target; node && node !== host; node = node.parentElement) {
+    for (let before = node.previousElementSibling; before; before = before.previousElementSibling) {
+      const style = getComputedStyle(before)
+      if (style.position !== 'sticky' || !style.top || style.top === 'auto') continue
+      const height = before.getBoundingClientRect().height
+      if (height <= limit)
+        reach = Math.max(reach, view.top + cssLength(style.top, view.height) + height)
+    }
+  }
+  if (typeof document.elementsFromPoint !== 'function') return reach - view.top
+  const seen = new Set<Element>()
+  // Probe just below the edge until nothing stuck reaches further.
+  for (let edge = view.top, round = 0; round < 4; round++) {
+    let next = edge
+    for (const fraction of [0.1, 0.5, 0.9]) {
+      const x = view.left + view.width * fraction
+      for (const element of document.elementsFromPoint(x, edge + 1)) {
+        if (seen.has(element) || element === host) continue
+        seen.add(element)
+        if (container !== window && !host.contains(element)) continue
+        const position = getComputedStyle(element).position
+        if (position !== 'fixed' && position !== 'sticky') continue
+        const box = element.getBoundingClientRect()
+        if (box.top > edge + 1 || box.height > limit) continue
+        next = Math.max(next, box.bottom)
+      }
+    }
+    if (next <= edge) break
+    edge = next
+    reach = Math.max(reach, edge)
+  }
+  return reach - view.top
+}
+
+const resolveOffset = (
+  offset: OffsetValue | readonly OffsetValue[] | undefined,
+  container: Element | Window,
+  target: Element,
+  view: View
+): number => {
   if (offset === undefined) return 0
-  if (typeof offset === 'number') return offset
-  if (typeof offset !== 'string') return offset.getBoundingClientRect().height
-  const value = offset.trim()
-  if (/^-?\d*\.?\d+%$/.test(value)) return (height * parseFloat(value)) / 100
-  if (/^-?\d*\.?\d+(px)?$/.test(value)) return parseFloat(value)
-  const element = document.querySelector(value)
-  return element ? element.getBoundingClientRect().height : 0
+  if (Array.isArray(offset)) {
+    return offset.reduce<number>(
+      (sum, part: OffsetValue) => sum + resolveOffset(part, container, target, view),
+      0
+    )
+  }
+  const value = offset as OffsetValue
+  if (typeof value === 'number') return value
+  if (typeof value === 'function') return Number(value({ container, target })) || 0
+  if (typeof value !== 'string') return value.getBoundingClientRect().height
+  const text = value.trim()
+  if (text === 'auto') return stuckOffset(container, view, target)
+  if (text === 'css') return cssOffset(container, target, view.height)
+  if (/^-?\d*\.?\d+%$/.test(text)) return (view.height * parseFloat(text)) / 100
+  if (/^-?\d*\.?\d+(px)?$/.test(text)) return parseFloat(text)
+  try {
+    const element = document.querySelector(text)
+    return element ? element.getBoundingClientRect().height : 0
+  } catch {
+    return 0
+  }
+}
+
+/** One axis of a point: absolute, relative to `current`, or unchanged. */
+const coordinate = (value: ScrollPoint['top'], current: number, size: number) => {
+  if (typeof value === 'number') return Number.isNaN(value) ? current : value
+  if (typeof value !== 'string') return current
+  return relativeTo(value, current, size) ?? current
 }
 
 /** Where the container must scroll to show `target` as asked. */
@@ -107,9 +201,23 @@ export const scrollPosition = (
   const resolved = resolveTarget(target)
   if (resolved === null) return null
   const view = viewport(container)
-  if (typeof resolved === 'number') return { top: clamp(resolved, view.maxY), left: view.x }
-  const offset = resolveOffset(options.offset, view.height)
+  if (!(resolved instanceof Element)) {
+    return {
+      top: clamp(coordinate(resolved.top, view.y, view.height), view.maxY),
+      left: clamp(coordinate(resolved.left, view.x, view.width), view.maxX),
+    }
+  }
+  const offset = resolveOffset(options.offset, container, resolved, view)
   const box = resolved.getBoundingClientRect()
+  if (
+    options.when === 'needed' &&
+    box.top >= view.top + offset &&
+    box.bottom <= view.top + view.height &&
+    box.left >= view.left &&
+    box.right <= view.left + view.width
+  ) {
+    return { top: clamp(view.y, view.maxY), left: clamp(view.x, view.maxX) }
+  }
   const top = align(
     options.block ?? 'start',
     view.y,
@@ -132,7 +240,7 @@ export const scrollPosition = (
 const setScroll = (container: Element | Window, top: number, left: number) =>
   container.scrollTo({ top, left, behavior: 'instant' as ScrollBehavior })
 
-const moveFocus = (target: Element | number | null) => {
+const moveFocus = (target: Element | null) => {
   if (!(target instanceof HTMLElement || target instanceof SVGElement)) return
   if (!target.matches('a[href], button, input, select, textarea, [tabindex], [contenteditable]')) {
     target.setAttribute('tabindex', '-1')
@@ -140,7 +248,7 @@ const moveFocus = (target: Element | number | null) => {
   target.focus({ preventScroll: true })
 }
 
-const writeHash = (target: Element | number | null, mode: ScrollToOptions['hash']) => {
+const writeHash = (target: Element | null, mode: ScrollToOptions['hash']) => {
   if (!mode) return
   const id = target instanceof Element ? target.id : ''
   if (target instanceof Element && !id) return
@@ -149,10 +257,6 @@ const writeHash = (target: Element | number | null, mode: ScrollToOptions['hash'
   if (url.href === window.location.href) return
   history[mode === 'push' ? 'pushState' : 'replaceState'](history.state, '', url)
 }
-
-/** The element that represents the container in the DOM: the root for the page. */
-const hostOf = (container: Element | Window): Element =>
-  container === window ? document.documentElement : (container as Element)
 
 const run = (
   target: ScrollTarget,
@@ -165,6 +269,8 @@ const run = (
   const resolved = resolveTarget(target)
   const element = resolved instanceof Element ? resolved : null
   const host = hostOf(container)
+  // `when` decides once, at the start; frames measure the destination again without it.
+  const frameOptions: ScrollToOptions = { ...options, when: 'always' }
   const signals = [options.signal, owner].filter((signal): signal is AbortSignal => !!signal)
 
   const detail = (): ScrollDetail => {
@@ -195,18 +301,17 @@ const run = (
   }
   const finish = (arrived: boolean) => {
     if (arrived) {
-      if (options.focus) moveFocus(resolved)
-      writeHash(resolved, options.hash)
+      if (options.focus) moveFocus(element)
+      writeHash(element, options.hash)
     }
     for (const node of marked) node.removeAttribute(STATE_ATTRIBUTE)
   }
 
   const start = viewport(container)
+  // Positions are fixed at the start, so relative ones (`'+=400'`) do not keep moving.
+  const goalTarget: ScrollTarget = element ?? { top: first.top, left: first.left }
   const distance = Math.hypot(first.top - start.y, first.left - start.x)
-  const duration =
-    options.duration === undefined || options.duration === 'auto'
-      ? Math.min(1000, Math.max(300, distance / 2))
-      : Math.max(0, options.duration)
+  const duration = durationFor(distance, options)
   const instant =
     options.behavior === 'instant' || prefersReducedMotion() || duration === 0 || distance < 1
 
@@ -218,10 +323,7 @@ const run = (
     return Promise.resolve(end('arrived'))
   }
 
-  const easing =
-    typeof options.easing === 'function'
-      ? options.easing
-      : (EASINGS[options.easing ?? 'ease-in-out'] ?? EASINGS['ease-in-out'])
+  const easing = parseEasing(options.easing)
   const interruptible = options.interruptible ?? true
 
   return new Promise<boolean>(resolve => {
@@ -252,7 +354,7 @@ const run = (
       begun ??= now
       const progress = duration ? Math.min(1, (now - begun) / duration) : 1
       // Measure again: the target may have moved while content loaded.
-      const goal = scrollPosition(target, options) ?? first
+      const goal = scrollPosition(goalTarget, frameOptions) ?? first
       const eased = easing(progress)
       setScroll(
         container,
@@ -319,6 +421,11 @@ const triggerOptions = (trigger: Element, base: ScrollToOptions): ScrollToOption
   options.inline = readEnum(trigger, 'data-scroll-to-inline', ALIGNS, base.inline ?? 'nearest')
   const duration = readNumber(trigger, 'data-scroll-to-duration', NaN)
   if (Number.isFinite(duration)) options.duration = duration
+  const speed = readNumber(trigger, 'data-scroll-to-speed', NaN)
+  if (speed > 0) options.speed = speed
+  const easing = readString(trigger, 'data-scroll-to-easing', '')
+  if (easing) options.easing = easing as `cubic-bezier(${string})`
+  options.when = readEnum(trigger, 'data-scroll-to-when', WHEN, base.when ?? 'always')
   return options
 }
 

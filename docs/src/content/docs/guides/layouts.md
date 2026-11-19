@@ -16,13 +16,19 @@ Pass the header as the offset. Its height is measured on every scroll, so a head
 autoScrollTo({ offset: '#header' })
 ```
 
-With an offset, links from other pages that land on `#section` are aligned once the page loads (`initialHash`). For jumps the script does not handle, such as the browser's find-in-page or `:target` navigation without JavaScript, also set CSS:
+With an offset, links from other pages that land on `#section` are aligned once the page loads (`initialHash`). For jumps the script does not handle, such as the browser's find-in-page or `:target` navigation without JavaScript, also set CSS, and let the script read the same value with `offset: 'css'`:
 
 ```css
 html {
   scroll-padding-top: 5rem;
 }
 ```
+
+```js
+autoScrollTo({ offset: 'css' })
+```
+
+When the header changes between pages or breakpoints, or a sticky bar sits below it, `offset: 'auto'` measures every fixed and sticky element stuck at the top. Offsets also add up in an array, such as `['#header', 16]`. [Aim and timing](../aim-and-timing/) covers every kind of offset.
 
 ## Skip links and focus
 
