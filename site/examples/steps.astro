@@ -1,0 +1,39 @@
+---
+import './_shared.css'
+---
+
+<div class="preview scroll-to-example">
+  <div class="box" data-preview="steps" tabindex="0" aria-label="Chapters">
+    <div class="bar">
+      <button type="button" class="pill" data-scroll-to="prev" data-scroll-to-focus="false">
+        Previous chapter
+      </button>
+      <button type="button" class="pill" data-scroll-to="next" data-scroll-to-focus="false">
+        Next chapter
+      </button>
+    </div>
+    {Array.from({ length: 5 }, (_, i) => (
+      <section>
+        <p class="part-title">Chapter {i + 1}</p>
+        <p>Press Next a few times quickly: each press counts.</p>
+      </section>
+    ))}
+  </div>
+</div>
+
+<script>
+  import { autoScrollTo } from '@samline/scroll-to'
+  import { preview } from '../../shared/lib/preview'
+
+  preview('steps', stage => {
+    const box = stage.querySelector<HTMLElement>('[data-preview="steps"]')!
+    // 'next' and 'prev' find the sections inside this box, below its sticky bar.
+    return autoScrollTo({
+      scope: box,
+      container: box,
+      offset: 'auto',
+      hash: false,
+      initialHash: false,
+    })
+  })
+</script>

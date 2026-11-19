@@ -73,7 +73,7 @@ For Shopify, WordPress or plain HTML pages without a build step, load the browse
 
 ```html
 <script
-  src="https://cdn.jsdelivr.net/npm/@samline/scroll-to@1.2.0/dist/browser/scroll-to.global.js"
+  src="https://cdn.jsdelivr.net/npm/@samline/scroll-to@1.3.0/dist/browser/scroll-to.global.js"
   defer
 ></script>
 ```
@@ -86,6 +86,10 @@ The bundle defines `window.ScrollTo`. Add `data-manual` to the script tag and ca
 
 Keep space for a fixed header with `offset`: pixels, a percentage, the header element measured live, `'auto'` to find every fixed and sticky bar stuck at the top, or `'css'` to reuse your `scroll-padding-top`. Offsets add up in arrays. Align to the start, center, end or nearest edge on both axes, skip the scroll when the target is already visible with `when: 'needed'`, and land precisely even when images load on the way: the destination is measured on every frame.
 
+### Sections and hidden answers
+
+Step through sections with `data-scroll-to="next"` and `"prev"`: quick presses add up. Links to content inside a closed `<details>` or a `hidden="until-found"` panel open it first, like the browser's own fragment links. Each link can set its own focus, hash and reveal.
+
 ### Any target, any pace
 
 Scroll to `'bottom'`, move relatively with `'+=100%'`, page through a strip with `{ left: '+=100%' }`, and time it with a `duration`, a constant `speed` or a `maxDuration`. Easing takes a name, any CSS `cubic-bezier()` or your own function.
@@ -96,7 +100,7 @@ Links move keyboard focus to their target on arrival and push the `#id` to the U
 
 ### The visitor stays in control
 
-A wheel, a touch or a key press stops the scroll at once, and a new scroll replaces the running one. Every scroll returns a promise of `true` (arrived) or `false` (interrupted).
+The wheel, a touch, a key that scrolls or a press on the scrollbar stops the scroll at once, while pressing Next again or tabbing does not, and a new scroll replaces the running one. Every scroll returns a promise of `true` (arrived) or `false` (interrupted).
 
 ### Follow every step
 
@@ -126,6 +130,8 @@ Scroll the page or any box, and center the selected tab of a horizontal strip wi
 | `when: 'needed'`                   | Skip the scroll when the target is already visible.                                     |
 | `speed`, `maxDuration`, `easing`   | Pace by pixels per second; easing takes names, `cubic-bezier()` or a function.          |
 | `cubicBezier(x1, y1, x2, y2)`      | The easing function of a CSS curve.                                                     |
+| `'next'`, `'prev'`, `sections`     | Step to the next or previous section.                                                   |
+| `reveal`                           | Open closed `<details>` and `hidden="until-found"` around the target (default `true`).  |
 | `scroll-to:start`, `scroll-to:end` | Bubbling events on the target, with the same details as the callbacks.                  |
 
 ### Entrypoints
@@ -147,6 +153,7 @@ Read the [documentation](https://samline.github.io/scroll-to/docs/) for the full
 | [Options](https://samline.github.io/scroll-to/docs/reference/configuration/)      | Options, targets and attributes.                                                         |
 | [Layouts](https://samline.github.io/scroll-to/docs/guides/layouts/)               | Fixed headers, skip links, containers, tabs and history.                                 |
 | [Aim and timing](https://samline.github.io/scroll-to/docs/guides/aim-and-timing/) | Every offset, relative targets and points, `when`, speed, durations and easing.          |
+| [Sections](https://samline.github.io/scroll-to/docs/guides/sections/)             | Next and previous, hidden content, per-link focus and hash, and what stops a scroll.     |
 | [Lifecycle](https://samline.github.io/scroll-to/docs/guides/lifecycle/)           | Callbacks, end reasons, events, the state attribute, `AbortSignal` and `createScrollTo`. |
 | [Frameworks](https://samline.github.io/scroll-to/docs/guides/frameworks/)         | React, Vue, Svelte, Astro and client-side routers.                                       |
 

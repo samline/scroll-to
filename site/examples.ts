@@ -125,10 +125,11 @@ document.querySelector('#show').addEventListener('click', async () => {
     tab: 'Follow the scroll',
     title: 'Show progress and why it ended',
     description:
-      'createScrollTo shares the duration and the callbacks: onProgress fills the bar, onEnd says why the scroll ended. Use the wheel or touch while it moves to interrupt it, or let an AbortSignal give up after one second.',
+      'createScrollTo shares the duration and the callbacks: onProgress fills the bar, onEnd says why the scroll ended. Stop it with cancel(), take over with the wheel or touch, or let an AbortSignal give up after one second.',
     files: {
       html: `<div class="toolbar">
   <button type="button" id="go">Scroll to the end</button>
+  <button type="button" id="stop">Stop</button>
   <button type="button" id="give-up">Give up after 1 s</button>
   <button type="button" id="back">Back to top</button>
   <output id="status" aria-live="polite">Ready</output>
@@ -161,6 +162,7 @@ const scroller = ScrollTo.createScrollTo({
 })
 
 document.querySelector('#go').addEventListener('click', () => scroller.to('#part-8'))
+document.querySelector('#stop').addEventListener('click', () => scroller.cancel())
 document
   .querySelector('#give-up')
   .addEventListener('click', () => scroller.to('#part-8', { signal: AbortSignal.timeout(1000) }))
@@ -185,6 +187,7 @@ const scroller = createScrollTo({
 })
 
 document.querySelector('#go').addEventListener('click', () => scroller.to('#part-8'))
+document.querySelector('#stop').addEventListener('click', () => scroller.cancel())
 document
   .querySelector('#give-up')
   .addEventListener('click', () => scroller.to('#part-8', { signal: AbortSignal.timeout(1000) }))
@@ -345,6 +348,83 @@ const page = direction =>
 
 document.querySelector('#prev').addEventListener('click', () => page('-'))
 document.querySelector('#next').addEventListener('click', () => page('+'))`,
+    },
+  },
+  {
+    id: 'steps',
+    tab: 'Next and previous',
+    title: 'Step through sections',
+    description:
+      'data-scroll-to="next" and "prev" find the next or previous section below the header. Press Next several times quickly: the presses add up. data-scroll-to-focus="false" keeps focus on the button, so the keyboard can keep pressing it.',
+    files: {
+      html: `<header id="header">
+  <button type="button" data-scroll-to="prev" data-scroll-to-focus="false">Previous chapter</button>
+  <button type="button" data-scroll-to="next" data-scroll-to-focus="false">Next chapter</button>
+</header>
+<main class="chapters">
+${Array.from({ length: 5 }, (_, i) => `  <section id="chapter-${i + 1}">\n    <h2>Chapter ${i + 1}</h2>\n  </section>`).join('\n')}
+</main>`,
+      css: `body { margin: 0; font-family: system-ui, sans-serif; }
+header { position: fixed; inset: 0 0 auto; z-index: 1; box-sizing: border-box; height: 3.5rem; display: flex; gap: 0.5rem; align-items: center; padding: 0 1.5rem; background: #fff; border-bottom: 1px solid #ddd; }
+.chapters { padding: 3.5rem 1.5rem 0; }
+section { min-height: 90vh; border-top: 1px solid #ddd; }`,
+      js: `ScrollTo.auto({ offset: 'auto', hash: false })`,
+      esm: `import { autoScrollTo } from '@samline/scroll-to'
+
+autoScrollTo({ offset: 'auto', hash: false })`,
+    },
+  },
+  {
+    id: 'faq',
+    tab: 'Hidden answers',
+    title: 'Links that open the answer first',
+    description:
+      'The answers sit inside closed <details> and a hidden="until-found" panel. Each link opens what hides its answer, then scrolls and moves focus there, like the browser does for fragment links. The panel gets a beforematch event, so your own state can follow.',
+    files: {
+      html: `<nav>
+  <a href="#refunds">How do refunds work?</a>
+  <a href="#shipping">When does it ship?</a>
+  <a href="#warranty" data-scroll-to-hash="replace">Is there a warranty?</a>
+</nav>
+<main>
+  <details>
+    <summary>Payments</summary>
+    <h3 id="refunds">Refunds</h3>
+    <p>Refunds reach your card within five days.</p>
+  </details>
+  <details>
+    <summary>Delivery</summary>
+    <h3 id="shipping">Shipping</h3>
+    <p>Orders ship the next working day.</p>
+  </details>
+  <div id="warranty-panel" hidden="until-found">
+    <h3 id="warranty">Warranty</h3>
+    <p>Two years, parts and labor.</p>
+  </div>
+</main>
+<p id="log" aria-live="polite"></p>`,
+      css: `body { font-family: system-ui, sans-serif; }
+nav { display: flex; flex-direction: column; gap: 0.5rem; }
+main { padding: 80vh 0; }
+details, #warranty-panel { margin-block: 30vh; padding: 1rem; border: 1px solid #ddd; }
+h3:focus { outline: 2px solid #78350f; outline-offset: 4px; }
+#log { position: fixed; bottom: 1rem; right: 1rem; margin: 0; }`,
+      js: `ScrollTo.auto({ offset: 16 })
+
+const log = document.querySelector('#log')
+
+document.querySelector('#warranty-panel').addEventListener('beforematch', () => {
+  log.textContent = 'The warranty panel opened'
+})`,
+      esm: `import { autoScrollTo } from '@samline/scroll-to'
+
+autoScrollTo({ offset: 16 })
+
+const log = document.querySelector('#log')
+
+document.querySelector('#warranty-panel').addEventListener('beforematch', () => {
+  log.textContent = 'The warranty panel opened'
+})`,
     },
   },
 ]

@@ -2,7 +2,7 @@
   "package": {
     "name": "Scroll To",
     "npmName": "@samline/scroll-to",
-    "version": "1.2.0",
+    "version": "1.3.0",
     "description": "Smooth scrolling to elements, anchors and positions with offsets for fixed headers, alignment, durations, easing, focus and URL hash handling, for vanilla JavaScript, any framework and plain HTML.",
     "author": "Samuel Olvera (samline)",
     "license": "MIT",
@@ -29,7 +29,7 @@
     "accentDark": "#d6a47a"
   },
   "delivery": {
-    "cdnScript": "https://cdn.jsdelivr.net/npm/@samline/scroll-to@1.2.0/dist/browser/scroll-to.global.js",
+    "cdnScript": "https://cdn.jsdelivr.net/npm/@samline/scroll-to@1.3.0/dist/browser/scroll-to.global.js",
     "cdnStylesheet": null
   },
   "dev": {

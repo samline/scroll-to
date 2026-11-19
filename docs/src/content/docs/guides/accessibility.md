@@ -22,8 +22,12 @@ Scroll To animates a jump without losing what a native jump does. Links handled 
 ## Motion and state
 
 - With `prefers-reduced-motion: reduce` every scroll jumps at once. The promise still resolves to `true`, and focus and the hash still change.
-- Any wheel, touch, key press or mouse press stops a scroll in progress, so visitors never fight the animation.
+- The wheel, a touch, a key that scrolls (arrows, Page Up, Page Down, Home, End, Space) or a press on the scrollbar stops a scroll in progress, so visitors never fight the animation. Tab, Enter and clicks on links and buttons do not: a keyboard user pressing Next again moves on, instead of stopping.
 - Keep `duration` short; long glides are disorienting on large pages.
+
+## Hidden content
+
+Links to content inside a closed `<details>` or a `hidden="until-found"` panel open it before scrolling, like the browser's own fragment links, so the target is visible and can take focus. [Sections and hidden content](../sections/) has the details.
 
 ## Layout and contrast
 

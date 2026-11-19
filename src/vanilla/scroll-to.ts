@@ -2,6 +2,7 @@ import {
   isBrowser,
   prefersReducedMotion,
   readEnum,
+  readBoolean,
   readNumber,
   readString,
 } from '@samline/internal'
@@ -30,9 +31,12 @@ import {
 
 interface Running {
   cancel: (reason: ScrollEndReason) => void
+  /** Where it is going, so `'next'` pressed again steps on from there. */
+  target: Element | null
 }
 const running = new WeakMap<object, Running>()
 const WHEN = ['always', 'needed'] as const
+const HASH = ['push', 'replace', 'false'] as const
 
 const resolveContainer = (container: ScrollToOptions['container']): Element | Window => {
   if (!container || container === window) return window
@@ -40,11 +44,18 @@ const resolveContainer = (container: ScrollToOptions['container']): Element | Wi
   return container as Element
 }
 
-/** A target as an element, or as a point on both axes (positions, `'top'`, `'bottom'`, `'+=400'`). */
-const resolveTarget = (target: ScrollTarget): Element | ScrollPoint | null => {
+/**
+ * A target as an element, or as a point on both axes (positions, `'top'`,
+ * `'bottom'`, `'+=400'`). `'next'` and `'prev'` find a section.
+ */
+const resolveTarget = (
+  target: ScrollTarget,
+  options: ScrollToOptions = {}
+): Element | ScrollPoint | null => {
   if (typeof target === 'number') return { top: target }
   if (typeof target !== 'string') return target
   const value = target.trim()
+  if (value === 'next' || value === 'prev') return step(value, options)
   if (value === '#' || value === '#top' || value === 'top') return { top: 0 }
   if (value === 'bottom') return { top: Infinity }
   if (/^[+-]=/.test(value)) return { top: value as `+=${string}` }
@@ -191,6 +202,58 @@ const coordinate = (value: ScrollPoint['top'], current: number, size: number) =>
   return relativeTo(value, current, size) ?? current
 }
 
+/**
+ * The first of `sections` the container would scroll forward to (`'next'`),
+ * or the last it would scroll back to (`'prev'`). Sections it cannot move to,
+ * such as the last ones at the end of the page, are skipped.
+ */
+const step = (direction: 'next' | 'prev', options: ScrollToOptions): Element | null => {
+  const container = resolveContainer(options.container)
+  const view = viewport(container)
+  let sections: NodeListOf<Element>
+  try {
+    sections = (container === window ? document : (container as Element)).querySelectorAll(
+      options.sections ?? 'section'
+    )
+  } catch {
+    return null
+  }
+  // A scroll already on its way to one of the sections: step on from it.
+  const list = [...sections]
+  const heading = running.get(container)?.target
+  const index = heading ? list.indexOf(heading) : -1
+  if (index >= 0) return list[index + (direction === 'next' ? 1 : -1)] ?? null
+  let found: Element | null = null
+  for (const section of list) {
+    const box = section.getBoundingClientRect()
+    if (!box.width && !box.height) continue
+    const goal = scrollPosition(section, { ...options, when: 'always' })!
+    // Along the axis that moves: vertical first, then horizontal.
+    const moved = Math.abs(goal.top - view.y) > 1 ? goal.top - view.y : goal.left - view.x
+    if (direction === 'next' && moved > 1) return section
+    if (direction === 'prev' && moved < -1) found = section
+  }
+  return found
+}
+
+/**
+ * Open what hides `target`, the way the browser does for fragment links:
+ * closed `<details>` around it (unless it is in their summary) and
+ * `hidden="until-found"` ancestors, which get a `beforematch` event first.
+ */
+const reveal = (target: Element) => {
+  for (let node = target.parentElement; node; node = node.parentElement) {
+    if (node instanceof HTMLDetailsElement && !node.open) {
+      const summary = node.querySelector(':scope > summary')
+      if (!summary?.contains(target)) node.open = true
+    }
+    if (node.getAttribute('hidden') === 'until-found') {
+      node.dispatchEvent(new Event('beforematch', { bubbles: true }))
+      node.removeAttribute('hidden')
+    }
+  }
+}
+
 /** Where the container must scroll to show `target` as asked. */
 export const scrollPosition = (
   target: ScrollTarget,
@@ -198,7 +261,7 @@ export const scrollPosition = (
 ): { top: number; left: number } | null => {
   if (!isBrowser()) return null
   const container = resolveContainer(options.container)
-  const resolved = resolveTarget(target)
+  const resolved = resolveTarget(target, options)
   if (resolved === null) return null
   const view = viewport(container)
   if (!(resolved instanceof Element)) {
@@ -266,8 +329,9 @@ const run = (
 ): Promise<boolean> => {
   if (!isBrowser()) return Promise.resolve(false)
   const container = resolveContainer(options.container)
-  const resolved = resolveTarget(target)
+  const resolved = resolveTarget(target, options)
   const element = resolved instanceof Element ? resolved : null
+  if (element && options.reveal !== false) reveal(element)
   const host = hostOf(container)
   // `when` decides once, at the start; frames measure the destination again without it.
   const frameOptions: ScrollToOptions = { ...options, when: 'always' }
@@ -286,7 +350,7 @@ const run = (
     return result.arrived
   }
 
-  const first = scrollPosition(target, options)
+  const first = resolved && scrollPosition(resolved, options)
   if (!first) return Promise.resolve(end('missing'))
   if (signals.some(signal => signal.aborted)) return Promise.resolve(end('cancelled'))
 
@@ -340,9 +404,11 @@ const run = (
       finish(reason === 'arrived')
       resolve(end(reason))
     }
-    const interrupt = () => stop('interrupted')
+    const interrupt = (event: Event) => {
+      if (takesOver(event)) stop('interrupted')
+    }
     const abort = () => stop('cancelled')
-    const entry: Running = { cancel: stop }
+    const entry: Running = { cancel: stop, target: element }
     running.set(container, entry)
     if (interruptible) {
       for (const type of INTERRUPTIONS) window.addEventListener(type, interrupt, { passive: true })
@@ -367,6 +433,24 @@ const run = (
     }
     frame = requestAnimationFrame(step)
   })
+}
+
+/** Keys that scroll the page themselves. */
+const SCROLL_KEYS = /^(Arrow(Up|Down|Left|Right)|Page(Up|Down)|Home|End| )$/
+/** Controls a press on which is a click, not a grab of the scroll. */
+const CONTROLS = 'a[href], button, input, select, textarea, label, summary, [role="button"]'
+
+/**
+ * Whether the visitor takes over the scroll: the wheel and touch always do; a
+ * key only when it scrolls, and a mouse press only outside links and buttons
+ * (on the scrollbar, or to drag), so pressing Next again is not a stop.
+ */
+const takesOver = (event: Event) => {
+  if (event.type === 'keydown') return SCROLL_KEYS.test((event as KeyboardEvent).key ?? '')
+  if (event.type === 'mousedown') {
+    return !(event.target instanceof Element && event.target.closest(CONTROLS))
+  }
+  return true
 }
 
 /**
@@ -426,6 +510,12 @@ const triggerOptions = (trigger: Element, base: ScrollToOptions): ScrollToOption
   const easing = readString(trigger, 'data-scroll-to-easing', '')
   if (easing) options.easing = easing as `cubic-bezier(${string})`
   options.when = readEnum(trigger, 'data-scroll-to-when', WHEN, base.when ?? 'always')
+  const sections = readString(trigger, 'data-scroll-to-sections', '')
+  if (sections) options.sections = sections
+  options.focus = readBoolean(trigger, 'data-scroll-to-focus', base.focus ?? false)
+  options.reveal = readBoolean(trigger, 'data-scroll-to-reveal', base.reveal ?? true)
+  const hash = readEnum(trigger, 'data-scroll-to-hash', HASH, base.hash || 'false')
+  options.hash = hash === 'false' ? false : hash
   return options
 }
 
@@ -453,9 +543,11 @@ export const autoScrollTo = ({
     const trigger = (event.target as Element | null)?.closest?.(selector)
     if (!trigger || !root.contains(trigger)) return
     const target = triggerTarget(trigger)
-    if (!target || resolveTarget(target) === null) return
+    if (!target) return
+    const options = triggerOptions(trigger, base)
+    if (resolveTarget(target, options) === null) return
     event.preventDefault()
-    void run(target, triggerOptions(trigger, base), trigger)
+    void run(target, options, trigger)
   }
 
   root.addEventListener('click', onClick)

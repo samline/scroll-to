@@ -4,8 +4,8 @@ titleAccent: 'events'
 description: 'Follow a scroll with onStart, onProgress and onEnd, read why it ended, use events, the state attribute, AbortSignal and createScrollTo.'
 locale: en
 sidebar:
-  group: guides
-  order: 4
+  group: api
+  order: 1
 ---
 
 Every scroll goes through the same steps: it **starts**, moves **frame by frame**, and **ends** exactly once. You can follow those steps three ways. Use whichever fits the code you have:
@@ -51,13 +51,13 @@ When `onEnd` runs, focus and the URL hash have already changed, and the state at
 
 `onEnd` and the `scroll-to:end` event say why the scroll ended. `arrived` is `true` only when `reason` is `'arrived'`, and it matches what the promise resolves to.
 
-| `reason`        | What happened                                                                        |
-| --------------- | ------------------------------------------------------------------------------------ |
-| `'arrived'`     | It reached the target                                                                |
-| `'interrupted'` | The visitor used the wheel, touched, clicked or pressed a key                        |
-| `'replaced'`    | Another scroll started on the same container                                         |
-| `'cancelled'`   | `cancelScroll()`, an aborted `signal`, or `destroy()` on a `createScrollTo` instance |
-| `'missing'`     | The target does not exist (`onStart` is not called)                                  |
+| `reason`        | What happened                                                                              |
+| --------------- | ------------------------------------------------------------------------------------------ |
+| `'arrived'`     | It reached the target                                                                      |
+| `'interrupted'` | The visitor took over: the wheel, a touch, a key that scrolls, or a press on the scrollbar |
+| `'replaced'`    | Another scroll started on the same container                                               |
+| `'cancelled'`   | `cancelScroll()`, an aborted `signal`, or `destroy()` on a `createScrollTo` instance       |
+| `'missing'`     | The target does not exist (`onStart` is not called)                                        |
 
 Treat them differently when it matters. For example, highlight only on arrival, and do nothing if the visitor took over:
 
@@ -150,7 +150,7 @@ scrollTo('#footer', { duration: 5000, signal: AbortSignal.timeout(2000) })
 
 `cancelScroll(container?)` does the same for whatever is running on a container, without a signal.
 
-A click, a touch, the wheel or a key press already interrupts a scroll (`reason: 'interrupted'`) unless you pass `interruptible: false`. So a "Stop" button on the page ends the scroll as `interrupted` before its own click handler runs, and needs no code at all. Use `signal` for stops that do not come from the visitor: a timeout, a new request, a route change or a component that unmounts.
+The wheel, a touch, a key that scrolls or a press on the scrollbar interrupts a scroll on its own (`reason: 'interrupted'`), unless you pass `interruptible: false`. Clicks on buttons and links do not, so a "Stop" button calls `cancelScroll()` or `abort()` and the scroll ends as `'cancelled'`. Use `signal` for stops that do not come from the visitor too: a timeout, a new request, a route change or a component that unmounts.
 
 ## Share defaults with createScrollTo
 
@@ -198,7 +198,7 @@ The CDN script exposes the same API on `window.ScrollTo`: `ScrollTo.isScrolling(
 
 ```html
 <script
-  src="https://cdn.jsdelivr.net/npm/@samline/scroll-to@1.2.0/dist/browser/scroll-to.global.js"
+  src="https://cdn.jsdelivr.net/npm/@samline/scroll-to@1.3.0/dist/browser/scroll-to.global.js"
   defer
 ></script>
 <script>

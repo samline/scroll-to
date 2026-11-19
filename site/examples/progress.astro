@@ -5,6 +5,7 @@ import './_shared.css'
 <div class="preview scroll-to-example">
   <div class="controls">
     <button type="button" class="pill" data-go>Scroll to the end</button>
+    <button type="button" class="pill" data-stop>Stop</button>
     <button type="button" class="pill" data-give-up>Give up after 1 s</button>
     <button type="button" class="pill" data-back>Back to top</button>
     <output aria-live="polite">Ready</output>
@@ -47,6 +48,7 @@ import './_shared.css'
     })
 
     root.querySelector('[data-go]')!.addEventListener('click', () => scroller.to(last))
+    root.querySelector('[data-stop]')!.addEventListener('click', () => scroller.cancel())
     root
       .querySelector('[data-give-up]')!
       .addEventListener('click', () => scroller.to(last, { signal: AbortSignal.timeout(1000) }))

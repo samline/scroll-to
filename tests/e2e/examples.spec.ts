@@ -83,6 +83,11 @@ test.describe('scroll-to copyable examples', () => {
     )
 
     await page.locator('#go').click()
+    await expect(page.locator('#status')).toHaveText('Scrolling…')
+    await page.locator('#stop').click()
+    await expect(page.locator('#status')).toHaveText('Ended: cancelled')
+
+    await page.locator('#go').click()
     await expect(page.locator('#status')).toHaveText('Ended: arrived', { timeout: 6000 })
     await expect(page.locator('#bar')).toHaveAttribute('style', /scaleX\(1\)/)
     // The last part cannot reach the top: the scroll stops at the end of the page.
@@ -133,5 +138,48 @@ test.describe('scroll-to copyable examples', () => {
     await expect.poll(() => strip.evaluate(el => Math.round(el.scrollLeft))).toBe(width * 2)
     await page.locator('#prev').click()
     await expect.poll(() => strip.evaluate(el => Math.round(el.scrollLeft))).toBe(width)
+  })
+
+  test('next and previous step through chapters, and quick presses add up', async ({ page }) => {
+    await openDocument(page, find(scrollToExamples, 'steps'))
+    const header = await page.locator('#header').evaluate(el => el.offsetHeight)
+    const next = page.getByRole('button', { name: 'Next chapter' })
+    await next.click()
+    await expect.poll(() => top(page, '#chapter-2')).toBe(header)
+    // Focus stays off the section, so the keyboard can keep pressing Next.
+    await expect(page.locator('#chapter-2')).not.toBeFocused()
+    await next.click()
+    await next.click()
+    await expect.poll(() => top(page, '#chapter-4')).toBe(header)
+    // The keyboard keeps working from the button.
+    await next.focus()
+    await page.keyboard.press('Enter')
+    // The last chapter cannot reach the header: the page ends first.
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => Math.round(scrollY) === document.documentElement.scrollHeight - innerHeight
+        )
+      )
+      .toBe(true)
+    await page.getByRole('button', { name: 'Previous chapter' }).click()
+    await expect.poll(() => top(page, '#chapter-4')).toBe(header)
+  })
+
+  test('links open the closed answer, scroll to it and focus it', async ({ page }) => {
+    await openDocument(page, find(scrollToExamples, 'faq'))
+    await page.getByRole('link', { name: 'How do refunds work?' }).click()
+    // WebKit may round a pixel.
+    await expect.poll(async () => Math.abs((await top(page, '#refunds')) - 16) <= 1).toBe(true)
+    await expect(page.locator('details').first()).toHaveAttribute('open', '')
+    await expect(page.locator('#refunds')).toBeFocused()
+
+    await page.getByRole('link', { name: 'Is there a warranty?' }).click()
+    await expect(page.locator('#log')).toHaveText('The warranty panel opened')
+    await expect(page.locator('#warranty-panel')).not.toHaveAttribute('hidden', /.*/)
+    // WebKit may round a pixel.
+    await expect.poll(async () => Math.abs((await top(page, '#warranty')) - 16) <= 1).toBe(true)
+    await expect.poll(() => page.evaluate(() => location.hash)).toBe('#warranty')
+    await expect(page.locator('#warranty')).toBeFocused()
   })
 })

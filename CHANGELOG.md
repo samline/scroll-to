@@ -2,6 +2,21 @@
 
 All notable changes to this package. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow [semver](https://semver.org/).
 
+## [1.3.0] - 2026-11-18
+
+### Added
+
+- `'next'` and `'prev'` targets step to the next or previous section, in HTML (`data-scroll-to="next"`) and in code. `sections` (and `data-scroll-to-sections`) chooses what counts as a section; the default is `'section'`. Sections are compared by where the container would scroll to, with the offset and alignment, so sections it cannot move to are skipped, and a press while a scroll heads to a section steps on from that section.
+- `reveal` (default `true`): before scrolling, closed `<details>` around the target open (unless the target is in their summary), and `hidden="until-found"` ancestors receive a `beforematch` event and are shown, like the browser does for fragment links. `data-scroll-to-reveal="false"` and `reveal: false` turn it off.
+- Trigger attributes `data-scroll-to-focus` and `data-scroll-to-hash` (`push`, `replace`, `false`) set focus and history per link.
+- Documentation: a Sections and hidden content guide, a Stop button in the Follow the scroll example, and two examples, Next and previous, and Hidden answers.
+
+### Changed
+
+- Interruptions: only input that takes over the scroll stops it. The wheel and touch still do; keys only when they scroll (arrows, Page Up, Page Down, Home, End, Space), and mouse presses only outside links, buttons and form controls. Tab, Enter and pressing a trigger again no longer stop a scroll, so a Stop button now ends it as `cancelled` through `cancelScroll()` or a `signal`.
+- Targets inside closed `<details>` and `hidden="until-found"` content are revealed before the scroll (see `reveal`).
+- Size budgets: 4.8 KB gzip for the package and 4.9 KB for the browser bundle (from 4.2 and 4.3 KB).
+
 ## [1.2.0] - 2026-11-18
 
 ### Added

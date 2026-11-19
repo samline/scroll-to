@@ -18,8 +18,9 @@ export interface ScrollPoint {
   left?: ScrollCoordinate
 }
 /**
- * An element, an `#id`, a selector, `'top'`, `'bottom'`, a vertical position
- * (`400`, `'+=400'`, `'-=50%'`) or a point on both axes (`{ top, left }`).
+ * An element, an `#id`, a selector, `'top'`, `'bottom'`, `'next'` or
+ * `'prev'` (the next or previous of `sections`), a vertical position (`400`,
+ * `'+=400'`, `'-=50%'`) or a point on both axes (`{ top, left }`).
  */
 export type ScrollTarget = Element | string | number | ScrollPoint
 
@@ -76,6 +77,17 @@ export interface ScrollToOptions {
    * visible below the offset. Defaults to `'always'`.
    */
   when?: 'always' | 'needed'
+  /**
+   * What `'next'` and `'prev'` step through, inside the container. Defaults
+   * to `'section'`.
+   */
+  sections?: string
+  /**
+   * Open closed `<details>` and `hidden="until-found"` content around the
+   * target before scrolling, like the browser does for fragment links.
+   * Defaults to `true`.
+   */
+  reveal?: boolean
   /** `'instant'` jumps. Reduced motion always jumps. Defaults to `'smooth'`. */
   behavior?: 'smooth' | 'instant'
   /** Stop when the visitor scrolls, touches or presses a key. Defaults to `true`. */

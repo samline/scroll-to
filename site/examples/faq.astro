@@ -1,0 +1,99 @@
+---
+import './_shared.css'
+---
+
+<div class="preview scroll-to-example">
+  <div class="faq-links">
+    <a href="#scroll-to-faq-refunds">How do refunds work?</a>
+    <a href="#scroll-to-faq-shipping">When does it ship?</a>
+    <a href="#scroll-to-faq-warranty">Is there a warranty?</a>
+    <output aria-live="polite"></output>
+  </div>
+  <div class="box" data-preview="faq" tabindex="0" aria-label="Answers">
+    <div class="spacer"><p>The answers are further down, closed.</p></div>
+    <details>
+      <summary>Payments</summary>
+      <p class="part-title" id="scroll-to-faq-refunds">Refunds</p>
+      <p>Refunds reach your card within five days.</p>
+    </details>
+    <details>
+      <summary>Delivery</summary>
+      <p class="part-title" id="scroll-to-faq-shipping">Shipping</p>
+      <p>Orders ship the next working day.</p>
+    </details>
+    <div class="panel" hidden="until-found" data-panel>
+      <p class="part-title" id="scroll-to-faq-warranty">Warranty</p>
+      <p>Two years, parts and labor.</p>
+    </div>
+    <div class="spacer"></div>
+  </div>
+</div>
+
+<script>
+  import { autoScrollTo } from '@samline/scroll-to'
+  import { preview } from '../../shared/lib/preview'
+
+  preview('faq', stage => {
+    const box = stage.querySelector<HTMLElement>('[data-preview="faq"]')!
+    const root = box.closest('.preview')!
+    const status = root.querySelector('output')!
+    const panel = box.querySelector<HTMLElement>('[data-panel]')!
+    const onMatch = () => {
+      status.value = 'The warranty panel opened'
+    }
+    panel.addEventListener('beforematch', onMatch)
+
+    // The links sit outside the box, so listen on the whole preview.
+    const controller = autoScrollTo({
+      scope: root,
+      container: box,
+      offset: 16,
+      hash: false,
+      initialHash: false,
+    })
+    return () => {
+      controller.destroy()
+      panel.removeEventListener('beforematch', onMatch)
+      status.value = ''
+    }
+  })
+</script>
+
+<style>
+  .faq-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    align-items: center;
+    font-size: 0.875rem;
+  }
+  .faq-links a {
+    color: var(--color-text);
+  }
+  .faq-links output {
+    color: var(--color-text-subtle);
+  }
+  .spacer {
+    min-height: 16rem;
+    padding: 1rem;
+  }
+  details,
+  .panel {
+    margin: 0 1rem 8rem;
+    padding: 0.75rem 1rem;
+    border: 0.0625rem solid var(--color-border);
+    border-radius: var(--radius-control);
+  }
+  details summary {
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: var(--color-text-subtle);
+  }
+  details .part-title {
+    margin-top: 0.75rem;
+  }
+  .part-title:focus {
+    outline: 0.125rem solid var(--color-accent);
+    outline-offset: 0.25rem;
+  }
+</style>

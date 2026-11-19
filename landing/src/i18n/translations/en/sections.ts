@@ -71,7 +71,7 @@ const sections = {
         icon: 'hand',
         title: 'You stay in control',
         description: text(
-          'A wheel, a touch or a key stops it at once. Reduced motion jumps instead of animating.'
+          'The wheel, a touch or a scrolling key stops it at once; Next pressed again moves on. Reduced motion jumps.'
         ),
       },
       frameworks: {

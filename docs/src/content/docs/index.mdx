@@ -20,12 +20,13 @@ import { href } from '../../lib/routes'
 
 ## How a scroll works
 
-1. The target is resolved: an element, an `#id`, a selector, `'top'`, `'bottom'`, a position in pixels, a relative position such as `'+=400'` or a point `{ top, left }`.
+1. The target is resolved: an element, an `#id`, a selector, a `'next'` or `'prev'` section, `'top'`, `'bottom'`, a position in pixels, a relative position such as `'+=400'` or a point `{ top, left }`.
 2. Its destination is computed for the container (the page by default), the alignment (`block`, `inline`) and the `offset`, and clamped to what can scroll. With `when: 'needed'`, a target already in view stays where it is.
 3. The scroll is animated with `duration` (or `speed`) and `easing`. The destination is measured again on every frame, so images that load on the way do not make it land in the wrong place.
-4. A wheel, touch, key press or a new scroll on the same container stops it. Reduced motion jumps instead.
-5. On arrival, links move keyboard focus to the target and push its `#id` to the URL, like a native jump.
-6. It ends exactly once, with a reason: `arrived`, `interrupted`, `replaced`, `cancelled` or `missing`.
+4. Closed `<details>` and `hidden="until-found"` content around the target opens first.
+5. The wheel, a touch, a key that scrolls, a press on the scrollbar or a new scroll on the same container stops it. Reduced motion jumps instead.
+6. On arrival, links move keyboard focus to the target and push its `#id` to the URL, like a native jump.
+7. It ends exactly once, with a reason: `arrived`, `interrupted`, `replaced`, `cancelled` or `missing`.
 
 `scrollTo()` returns a promise of `true` when it arrives and `false` otherwise. `onStart`, `onProgress` and `onEnd`, the `scroll-to:start` and `scroll-to:end` events and the `data-scroll-to-state` attribute follow it while it runs.
 
@@ -41,6 +42,8 @@ import { href } from '../../lib/routes'
 | Speed and feel           | `duration`, `speed`, `maxDuration` and `easing`           |
 | Relative moves           | `'+=100%'`, `'bottom'`, `{ left: '+=100%' }`              |
 | Skip when visible        | `when: 'needed'`                                          |
+| Step through sections    | `data-scroll-to="next"` / `"prev"`, `sections`            |
+| Reach hidden answers     | Closed `<details>` open on their own (`reveal`)           |
 | From code                | `await scrollTo(target, options)`                         |
 | Measure only             | `scrollPosition(target, options)`                         |
 | Follow it                | `onStart`, `onProgress`, `onEnd`, or `scroll-to:*` events |
@@ -85,6 +88,12 @@ Fixed headers, skip links, containers, tabs and history.
 <LinkCard href={href('guides/aim-and-timing')} title="Aim and timing">
 
 Offsets, CSS scroll padding, sticky bars, relative targets, speed and easing.
+
+</LinkCard>
+
+<LinkCard href={href('guides/sections')} title="Sections and hidden content">
+
+Next and previous, closed details, per-link focus and hash, and what stops a scroll.
 
 </LinkCard>
 
