@@ -198,7 +198,7 @@ The CDN script exposes the same API on `window.ScrollTo`: `ScrollTo.isScrolling(
 
 ```html
 <script
-  src="https://cdn.jsdelivr.net/npm/@samline/scroll-to@1.3.0/dist/browser/scroll-to.global.js"
+  src="https://cdn.jsdelivr.net/npm/@samline/scroll-to@1.4.0/dist/browser/scroll-to.global.js"
   defer
 ></script>
 <script>

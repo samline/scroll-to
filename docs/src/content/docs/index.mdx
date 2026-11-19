@@ -15,7 +15,7 @@ import { href } from '../../lib/routes'
 `@samline/scroll-to` scrolls smoothly to anchors, elements and positions, and stops where it should: below a fixed header, centered in a strip, or at the nearest edge. Call `autoScrollTo()` (or load the CDN script) and same-page `#id` links and `[data-scroll-to]` triggers use it.
 
 ```html
-<a href="#pricing">Pricing</a> <button type="button" data-scroll-to="top">Back to top</button>
+<a href="#pricing">Pricing</a> <a href="#top" data-scroll-to-back-to-top>Back to top</a>
 ```
 
 ## How a scroll works
@@ -25,10 +25,10 @@ import { href } from '../../lib/routes'
 3. The scroll is animated with `duration` (or `speed`) and `easing`. The destination is measured again on every frame, so images that load on the way do not make it land in the wrong place.
 4. Closed `<details>` and `hidden="until-found"` content around the target opens first.
 5. The wheel, a touch, a key that scrolls, a press on the scrollbar or a new scroll on the same container stops it. Reduced motion jumps instead.
-6. On arrival, links move keyboard focus to the target and push its `#id` to the URL, like a native jump.
+6. On arrival, links move keyboard focus to the target and push its `#id` to the URL, like a native jump. With `highlight`, the target is marked with `data-scroll-to-arrived` for a moment.
 7. It ends exactly once, with a reason: `arrived`, `interrupted`, `replaced`, `cancelled` or `missing`.
 
-`scrollTo()` returns a promise of `true` when it arrives and `false` otherwise. `onStart`, `onProgress` and `onEnd`, the `scroll-to:start` and `scroll-to:end` events and the `data-scroll-to-state` attribute follow it while it runs.
+`scrollTo()` returns a promise of `true` when it arrives and `false` otherwise. `onStart`, `onProgress` and `onEnd`, the `scroll-to:start` and `scroll-to:end` events, the `data-scroll-to-state` attribute and the `--scroll-to-progress` custom property follow it while it runs.
 
 ## Pieces
 
@@ -48,6 +48,9 @@ import { href } from '../../lib/routes'
 | Measure only             | `scrollPosition(target, options)`                         |
 | Follow it                | `onStart`, `onProgress`, `onEnd`, or `scroll-to:*` events |
 | Style it while it runs   | `[data-scroll-to-state='scrolling']`                      |
+| A bar that fills with it | `--scroll-to-progress`, from `0` to `1`                   |
+| Show where it landed     | `highlight` and `[data-scroll-to-arrived]`                |
+| Back to top              | `backToTop(button)` or `data-scroll-to-back-to-top`       |
 | Stop it from anywhere    | `signal` (an `AbortSignal`) or `cancelScroll()`           |
 | Share options            | `createScrollTo(defaults)`                                |
 
@@ -100,6 +103,12 @@ Next and previous, closed details, per-link focus and hash, and what stops a scr
 <LinkCard href={href('guides/lifecycle')} title="Lifecycle and events">
 
 Callbacks, end reasons, events, the state attribute, AbortSignal and createScrollTo.
+
+</LinkCard>
+
+<LinkCard href={href('guides/feedback')} title="Highlight and back to top">
+
+Highlight the target on arrival, a progress property, and a back-to-top button with a ring.
 
 </LinkCard>
 

@@ -73,9 +73,15 @@ For Shopify, WordPress or plain HTML pages without a build step, load the browse
 
 ```html
 <script
-  src="https://cdn.jsdelivr.net/npm/@samline/scroll-to@1.3.0/dist/browser/scroll-to.global.js"
+  src="https://cdn.jsdelivr.net/npm/@samline/scroll-to@1.4.0/dist/browser/scroll-to.global.js"
   defer
 ></script>
+```
+
+Any element with `data-scroll-to-back-to-top` becomes a back-to-top button; style its `[data-scroll-to-visible="false"]` state to hide it near the top.
+
+```html
+<a class="back-to-top" href="#top" data-scroll-to-back-to-top>Back to top</a>
 ```
 
 The bundle defines `window.ScrollTo`. Add `data-manual` to the script tag and call `ScrollTo.auto(options)` to start it with your own options.
@@ -106,6 +112,10 @@ The wheel, a touch, a key that scrolls or a press on the scrollbar stops the scr
 
 `onStart`, `onProgress` and `onEnd` follow a scroll from its first frame to its end, and `onEnd` says why it ended: `arrived`, `interrupted`, `replaced`, `cancelled` or `missing`. The same moments bubble as `scroll-to:start` and `scroll-to:end` events, and `data-scroll-to-state="scrolling"` marks the trigger and the scrolling element while it runs, so plain HTML and CSS can react too. Stop a scroll from anywhere with an `AbortSignal`.
 
+### Show where it went
+
+`highlight` marks the target with `data-scroll-to-arrived` for a moment once it arrives, and `--scroll-to-progress` follows a running scroll from `0` to `1` on the trigger and the scrolling element, so CSS can flash the target or fill a bar. `backToTop(button)` shows a button once the page is scrolled one screen down, exposes `--scroll-to-scrolled` for a progress ring, and moves focus to the top when pressed. With the CDN script, `data-scroll-to-back-to-top` does it without code.
+
 ### Write the defaults once
 
 `createScrollTo({ offset: '#header' })` returns a scroller with shared options for every call, its own `auto()` for links, and one `destroy()` that stops what it started.
@@ -131,6 +141,8 @@ Scroll the page or any box, and center the selected tab of a horizontal strip wi
 | `speed`, `maxDuration`, `easing`   | Pace by pixels per second; easing takes names, `cubic-bezier()` or a function.          |
 | `cubicBezier(x1, y1, x2, y2)`      | The easing function of a CSS curve.                                                     |
 | `'next'`, `'prev'`, `sections`     | Step to the next or previous section.                                                   |
+| `highlight`                        | Mark the target with `data-scroll-to-arrived` on arrival, for a CSS highlight.          |
+| `backToTop(button, options?)`      | A back-to-top button with `data-scroll-to-visible` and `--scroll-to-scrolled`.          |
 | `reveal`                           | Open closed `<details>` and `hidden="until-found"` around the target (default `true`).  |
 | `scroll-to:start`, `scroll-to:end` | Bubbling events on the target, with the same details as the callbacks.                  |
 
@@ -155,6 +167,7 @@ Read the [documentation](https://samline.github.io/scroll-to/docs/) for the full
 | [Aim and timing](https://samline.github.io/scroll-to/docs/guides/aim-and-timing/) | Every offset, relative targets and points, `when`, speed, durations and easing.          |
 | [Sections](https://samline.github.io/scroll-to/docs/guides/sections/)             | Next and previous, hidden content, per-link focus and hash, and what stops a scroll.     |
 | [Lifecycle](https://samline.github.io/scroll-to/docs/guides/lifecycle/)           | Callbacks, end reasons, events, the state attribute, `AbortSignal` and `createScrollTo`. |
+| [Feedback](https://samline.github.io/scroll-to/docs/guides/feedback/)             | Highlight on arrival, `--scroll-to-progress`, and a back-to-top button with a ring.      |
 | [Frameworks](https://samline.github.io/scroll-to/docs/guides/frameworks/)         | React, Vue, Svelte, Astro and client-side routers.                                       |
 
 ## Changelog

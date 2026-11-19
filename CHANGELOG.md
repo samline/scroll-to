@@ -2,6 +2,20 @@
 
 All notable changes to this package. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow [semver](https://semver.org/).
 
+## [1.4.0] - 2026-11-18
+
+### Added
+
+- `highlight` (`true` for 1500 ms, or a number of milliseconds) sets `data-scroll-to-arrived` on the target once it arrives, so CSS can show where the visitor landed. Arriving again restarts the time; scrolls that do not arrive leave it alone. `data-scroll-to-highlight` sets it per trigger.
+- `--scroll-to-progress`: while a scroll runs, the scrolling element and the trigger carry the eased progress from `0` to `1` as an inline custom property, removed when it ends, for bars and fills without JavaScript.
+- `backToTop(button, options?)` returns `{ update, destroy }`: the button gets `data-scroll-to-visible` (`'true'` past `threshold`, by default one screen) and `--scroll-to-scrolled` (how far down the container is, from `0` to `1`) for a progress ring; a click scrolls to `target` (the top by default) and moves focus there when the button had it. The browser bundle turns `[data-scroll-to-back-to-top]` elements into these buttons, with the attribute's value as the threshold, and `ScrollTo.backToTop` is exposed.
+- Constants `ARRIVED_ATTRIBUTE`, `VISIBLE_ATTRIBUTE`, `PROPERTIES` and `HIGHLIGHT_DURATION`, and the types `BackToTopOptions` and `BackToTopController`.
+- Documentation: a Highlight and back to top guide, and two examples, Highlight and Back to top.
+
+### Changed
+
+- Size budgets: 5.6 KB gzip for the package and 5.7 KB for the browser bundle (from 4.8 and 4.9 KB).
+
 ## [1.3.0] - 2026-11-18
 
 ### Added

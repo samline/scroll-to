@@ -24,6 +24,7 @@ export default {
     'guides/layouts': 'Layouts and focus',
     'guides/sections': 'Sections and hidden content',
     'guides/lifecycle': 'Lifecycle and events',
+    'guides/feedback': 'Highlight and back to top',
     index: 'Overview',
     'reference/api': 'API reference',
     'reference/configuration': 'Configuration',

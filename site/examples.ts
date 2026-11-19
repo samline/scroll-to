@@ -427,4 +427,81 @@ document.querySelector('#warranty-panel').addEventListener('beforematch', () => 
 })`,
     },
   },
+  {
+    id: 'highlight',
+    tab: 'Highlight',
+    title: 'Show where the visitor landed',
+    description:
+      'Each term link scrolls to its definition and marks it with data-scroll-to-arrived for a moment, so the eye finds it even when it stops in the middle of the screen. While the scroll runs, the link fills from --scroll-to-progress. Both are plain CSS hooks, and reduced motion keeps only the color.',
+    files: {
+      html: `<nav>
+  <a href="#cache" data-scroll-to-block="center">Cache</a>
+  <a href="#latency" data-scroll-to-block="center">Latency</a>
+  <a href="#throughput" data-scroll-to-block="center">Throughput</a>
+</nav>
+<dl>
+  <dt id="cache">Cache</dt>
+  <dd>A copy kept close by, so the next read is fast.</dd>
+  <dt id="latency">Latency</dt>
+  <dd>How long one request waits for its answer.</dd>
+  <dt id="throughput">Throughput</dt>
+  <dd>How many requests finish each second.</dd>
+</dl>`,
+      css: `body { font-family: system-ui, sans-serif; }
+nav { position: fixed; top: 1rem; left: 1rem; display: flex; gap: 1rem; }
+nav a {
+  background: linear-gradient(#fde68a, #fde68a) no-repeat left / calc(var(--scroll-to-progress, 0) * 100%) 100%;
+}
+dl { padding: 100vh 1rem; }
+dt { margin-top: 60vh; padding: 0.25rem 0.5rem; font-weight: 600; border-radius: 0.25rem; }
+dt:focus { outline: 2px solid #78350f; outline-offset: 2px; }
+dt[data-scroll-to-arrived] { background: #fde68a; }
+@media (prefers-reduced-motion: no-preference) {
+  dt { transition: background-color 0.6s; }
+  dt[data-scroll-to-arrived] { animation: pulse 0.6s 2; }
+}
+@keyframes pulse { 50% { scale: 1.04; } }`,
+      js: `ScrollTo.auto({ highlight: 1500, hash: false })`,
+      esm: `import { autoScrollTo } from '@samline/scroll-to'
+
+autoScrollTo({ highlight: 1500, hash: false })`,
+    },
+  },
+  {
+    id: 'back-to-top',
+    tab: 'Back to top',
+    title: 'A back-to-top button with a progress ring',
+    description:
+      'The button stays out of the way until the page is scrolled one screen down, then fades in. Its ring fills from --scroll-to-scrolled as you read. Pressing it scrolls to the top and moves focus there, so keyboard users do not stay on a button that hides. Without JavaScript it is a plain link to the top.',
+    files: {
+      html: `<main id="top">
+  <h1>A long article</h1>
+  <p>Scroll down: the button appears after one screen.</p>
+</main>
+<a class="back-to-top" href="#top" data-scroll-to-back-to-top aria-label="Back to top">
+  <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+    <path d="M12 19V5M5 12l7-7 7 7" fill="none" stroke="currentColor" stroke-width="2" />
+  </svg>
+</a>`,
+      css: `body { font-family: system-ui, sans-serif; }
+main { min-height: 400vh; padding: 1rem; }
+.back-to-top {
+  position: fixed; right: 1rem; bottom: 1rem;
+  display: grid; place-items: center; width: 3rem; height: 3rem;
+  border-radius: 50%; color: #78350f; background:
+    radial-gradient(closest-side, #fff 85%, transparent 86%),
+    conic-gradient(#78350f calc(var(--scroll-to-scrolled, 0) * 1turn), #e5e5e5 0);
+}
+/* Only hidden once the script says so: without JavaScript the link stays. */
+.back-to-top[data-scroll-to-visible="false"] { visibility: hidden; opacity: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .back-to-top { transition: opacity 0.3s, visibility 0.3s; }
+}`,
+      js: `// The script turns [data-scroll-to-back-to-top] into a back-to-top button.
+// Its value is the threshold: empty for one screen, or pixels such as "600".`,
+      esm: `import { backToTop } from '@samline/scroll-to'
+
+backToTop('.back-to-top', { target: '#top' })`,
+    },
+  },
 ]

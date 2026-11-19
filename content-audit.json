@@ -1,6 +1,6 @@
 {
   "status": "verified",
-  "packageVersion": "1.3.0",
+  "packageVersion": "1.4.0",
   "capabilityReview": {
     "status": "verified",
     "integrations": [
@@ -77,6 +77,18 @@
         "evidence": "test/navigation.test.ts (reveal), tests/e2e/scroll-to.spec.ts, tests/e2e/examples.spec.ts",
         "destination": "site/examples/faq.astro",
         "reviewed": true
+      },
+      {
+        "name": "Highlight on arrival and the progress property",
+        "evidence": "test/feedback.test.ts (highlight, progress property), tests/e2e/scroll-to.spec.ts, tests/e2e/examples.spec.ts",
+        "destination": "site/examples/highlight.astro",
+        "reviewed": true
+      },
+      {
+        "name": "Back to top with a progress ring",
+        "evidence": "test/feedback.test.ts (backToTop), test/global.test.ts, tests/e2e/scroll-to.spec.ts, tests/e2e/examples.spec.ts",
+        "destination": "site/examples/back-to-top.astro",
+        "reviewed": true
       }
     ],
     "onboarding": {
@@ -92,25 +104,25 @@
   "sources": [
     {
       "source": "README.md",
-      "sha256": "ba8294e6d6895cb3554a27f5b6983f46a7d9ab353fc77280f29f699273c433a8",
+      "sha256": "2f8e5b404435b8ca47264fa2dfd40f6cb2020fd92adf019eeb304b9b10a14cb0",
       "destination": "docs/src/content/docs/index.mdx",
       "reviewed": true
     },
     {
       "source": "src/browser/global.ts",
-      "sha256": "ba7656d8b7ab477d03dc10cbe6fa23d7b2b40945f8d91e09841ef8ab9592d06f",
+      "sha256": "1dd5d45ad10436ac692419a13c9291cbbf35f1f13cff041890a054d8965cbab3",
       "destination": "docs/src/content/docs/reference/api.md",
       "reviewed": true
     },
     {
       "source": "src/core/scroll-to.ts",
-      "sha256": "afdce9b5e7785358114c1d8289f9f5b5ca07715cbc494dc777fa769ede36caa3",
+      "sha256": "a42f1c2abf96c824725ed90cc876c63e29a284e465678289dccae252bb7fd158",
       "destination": "docs/src/content/docs/reference/api.md",
       "reviewed": true
     },
     {
       "source": "src/core/index.ts",
-      "sha256": "c4becd3bfef56d45769d18683f8ce7e92335f62ba5d9723b7daa8e3e094477c2",
+      "sha256": "73f2a54fd1a4412227b06e1a5fc7281ed0477f0c5359df82dadd51cc8e7cc21f",
       "destination": "docs/src/content/docs/reference/api.md",
       "reviewed": true
     },
@@ -128,67 +140,67 @@
     },
     {
       "source": "src/core/scroll-to.ts",
-      "sha256": "afdce9b5e7785358114c1d8289f9f5b5ca07715cbc494dc777fa769ede36caa3",
+      "sha256": "a42f1c2abf96c824725ed90cc876c63e29a284e465678289dccae252bb7fd158",
       "destination": "docs/src/content/docs/reference/configuration.md",
       "reviewed": true
     },
     {
       "source": "src/core/scroll-to.ts",
-      "sha256": "afdce9b5e7785358114c1d8289f9f5b5ca07715cbc494dc777fa769ede36caa3",
+      "sha256": "a42f1c2abf96c824725ed90cc876c63e29a284e465678289dccae252bb7fd158",
       "destination": "docs/src/content/docs/guides/layouts.md",
       "reviewed": true
     },
     {
       "source": "src/core/scroll-to.ts",
-      "sha256": "afdce9b5e7785358114c1d8289f9f5b5ca07715cbc494dc777fa769ede36caa3",
+      "sha256": "a42f1c2abf96c824725ed90cc876c63e29a284e465678289dccae252bb7fd158",
       "destination": "docs/src/content/docs/guides/frameworks.md",
       "reviewed": true
     },
     {
       "source": "src/vanilla/scroll-to.ts",
-      "sha256": "e8ec74d4efbb317f091bed172e65f63752046fc838c226dc09aa159d4f1f3a83",
+      "sha256": "031d44d4f124affea3342f7456fd639892ccce66c854353903141745bcb90cbe",
       "destination": "docs/src/content/docs/guides/lifecycle.md",
       "reviewed": true
     },
     {
       "source": "src/core/scroll-to.ts",
-      "sha256": "afdce9b5e7785358114c1d8289f9f5b5ca07715cbc494dc777fa769ede36caa3",
+      "sha256": "a42f1c2abf96c824725ed90cc876c63e29a284e465678289dccae252bb7fd158",
       "destination": "docs/src/content/docs/guides/lifecycle.md",
       "reviewed": true
     },
     {
       "source": "src/vanilla/scroll-to.ts",
-      "sha256": "e8ec74d4efbb317f091bed172e65f63752046fc838c226dc09aa159d4f1f3a83",
+      "sha256": "031d44d4f124affea3342f7456fd639892ccce66c854353903141745bcb90cbe",
       "destination": "docs/src/content/docs/guides/aim-and-timing.md",
       "reviewed": true
     },
     {
       "source": "src/core/scroll-to.ts",
-      "sha256": "afdce9b5e7785358114c1d8289f9f5b5ca07715cbc494dc777fa769ede36caa3",
+      "sha256": "a42f1c2abf96c824725ed90cc876c63e29a284e465678289dccae252bb7fd158",
       "destination": "docs/src/content/docs/guides/aim-and-timing.md",
       "reviewed": true
     },
     {
       "source": "src/vanilla/scroll-to.ts",
-      "sha256": "e8ec74d4efbb317f091bed172e65f63752046fc838c226dc09aa159d4f1f3a83",
+      "sha256": "031d44d4f124affea3342f7456fd639892ccce66c854353903141745bcb90cbe",
       "destination": "docs/src/content/docs/guides/sections.md",
       "reviewed": true
     },
     {
       "source": "src/core/scroll-to.ts",
-      "sha256": "afdce9b5e7785358114c1d8289f9f5b5ca07715cbc494dc777fa769ede36caa3",
+      "sha256": "a42f1c2abf96c824725ed90cc876c63e29a284e465678289dccae252bb7fd158",
       "destination": "docs/src/content/docs/guides/sections.md",
       "reviewed": true
     }
   ],
   "publicExports": [
     {
-      "source": "scrollTo, scrollPosition, cancelScroll, isScrolling, autoScrollTo, createScrollTo",
+      "source": "scrollTo, scrollPosition, cancelScroll, isScrolling, autoScrollTo, createScrollTo, backToTop",
       "destination": "docs/src/content/docs/reference/api.md",
       "reviewed": true
     },
     {
-      "source": "ScrollTarget, ScrollToController, ScrollToInstance, ScrollDetail, ScrollProgress, ScrollResult, ScrollEndReason, Align, Easing, EASINGS, EVENTS, END_REASONS, STATE_ATTRIBUTE, cubicBezier, ScrollPoint, ScrollCoordinate, OffsetValue, OffsetContext, EasingValue",
+      "source": "ScrollTarget, ScrollToController, ScrollToInstance, ScrollDetail, ScrollProgress, ScrollResult, ScrollEndReason, Align, Easing, EASINGS, EVENTS, END_REASONS, STATE_ATTRIBUTE, cubicBezier, ScrollPoint, ScrollCoordinate, OffsetValue, OffsetContext, EasingValue, ARRIVED_ATTRIBUTE, VISIBLE_ATTRIBUTE, PROPERTIES, HIGHLIGHT_DURATION, BackToTopOptions, BackToTopController",
       "destination": "docs/src/content/docs/reference/api.md",
       "reviewed": true
     },
@@ -221,7 +233,12 @@
       "source": "'next' and 'prev' targets, sections, reveal, data-scroll-to-focus, -hash, -reveal, -sections, interruption rules",
       "destination": "docs/src/content/docs/guides/sections.md",
       "reviewed": true
+    },
+    {
+      "source": "highlight, data-scroll-to-highlight, data-scroll-to-arrived, --scroll-to-progress, backToTop, data-scroll-to-visible, --scroll-to-scrolled, data-scroll-to-back-to-top",
+      "destination": "docs/src/content/docs/guides/feedback.md",
+      "reviewed": true
     }
   ],
-  "notes": "Content reviewed in the utils collection site (1.0.0), then moved to this repository's standalone site on 2026-11-14. 1.1.0 added the lifecycle guide and the progress and events examples; 1.2.0 added the aim and timing guide and the stacked and pages examples; 1.3.0 added the sections guide and the steps and faq examples. Source hashes were recomputed against @samline/scroll-to@1.3.0."
+  "notes": "Content reviewed in the utils collection site (1.0.0), then moved to this repository's standalone site on 2026-11-14. 1.1.0 added the lifecycle guide and the progress and events examples; 1.2.0 added the aim and timing guide and the stacked and pages examples; 1.3.0 added the sections guide and the steps and faq examples; 1.4.0 added the highlight and back to top guide and the highlight and back-to-top examples. Source hashes were recomputed against @samline/scroll-to@1.4.0."
 }

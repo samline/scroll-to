@@ -59,4 +59,28 @@ describe('browser global', () => {
     click(document.getElementById('link')!)
     expect(state.y).toBe(1100)
   })
+
+  it('turns [data-scroll-to-back-to-top] into back-to-top buttons', async () => {
+    const { state } = page([['install', 1200]])
+    document.body.insertAdjacentHTML(
+      'beforeend',
+      `<a id="top" href="#" data-scroll-to-back-to-top="300">Top</a>
+       <button id="plain" data-scroll-to-back-to-top>Top</button>`
+    )
+    const ScrollTo = await load('complete')
+    expect(ScrollTo.backToTop).toBeTypeOf('function')
+    const top = document.getElementById('top')!
+    const plain = document.getElementById('plain')!
+    state.y = 500
+    window.dispatchEvent(new Event('scroll'))
+    await new Promise(resolve => requestAnimationFrame(resolve))
+    expect(top.getAttribute('data-scroll-to-visible')).toBe('true')
+    expect(plain.getAttribute('data-scroll-to-visible')).toBe('false')
+    click(top)
+    expect(state.y).toBe(0)
+
+    ScrollTo.auto()
+    ScrollTo.controller!.destroy()
+    expect(top.hasAttribute('data-scroll-to-visible')).toBe(false)
+  })
 })

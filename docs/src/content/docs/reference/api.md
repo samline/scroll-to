@@ -91,6 +91,39 @@ scroller.destroy()
 
 `destroy()` is idempotent. Afterwards `to()` resolves to `false`, `position()` returns `null` and `auto()` returns a controller that does nothing.
 
+## backToTop(button, options?)
+
+```ts
+backToTop(button: Element | string | null, options?: BackToTopOptions): BackToTopController
+```
+
+Turns `button` (an element or a selector) into a "Back to top" control for the page or `options.container`. Missing buttons and invalid selectors return a controller that does nothing.
+
+- `data-scroll-to-visible` is `'false'` until the container is scrolled past `threshold`, then `'true'`. It is never set before the script runs, so a rule on `[data-scroll-to-visible="false"]` hides the button only once it works.
+- `--scroll-to-scrolled` on the button goes from `0` at the top to `1` at the end, for a progress ring or bar.
+- A click scrolls to `target` (the top by default). Once it arrives, focus moves there when the button had it: to the `target` element, or to the container (`<body>` for the page) with a `tabindex="-1"` that is removed again when focus moves on.
+
+It takes every scroll option, plus:
+
+| Option      | Default  | Description                                                                       |
+| ----------- | -------- | --------------------------------------------------------------------------------- |
+| `target`    | `'top'`  | Where the button scrolls to: any target                                           |
+| `threshold` | `'100%'` | How far down before it shows: pixels, or a percentage of the container height     |
+| `focus`     | `true`   | Move focus to where it scrolled, if the button had focus. `false` leaves it alone |
+
+| Member      | Description                                                                  |
+| ----------- | ---------------------------------------------------------------------------- |
+| `update()`  | Measure again, after the content changed size without a scroll               |
+| `destroy()` | Remove the listeners, the attribute and the property. Later calls do nothing |
+
+```js
+import { backToTop } from '@samline/scroll-to'
+
+const button = backToTop('.back-to-top', { threshold: 600, target: '#main' })
+```
+
+The click is handled by the button itself, so an `autoScrollTo` on the same page leaves it alone. See [Highlight and back to top](../../guides/feedback/) for the CSS.
+
 ## Events
 
 | Event             | Dispatched                                 | `event.detail` |
@@ -149,24 +182,28 @@ scrollTo('#faq', { easing: brand })
 
 ## Types and constants
 
-`ScrollToOptions`, `AutoScrollToOptions`, `ScrollToController`, `ScrollToInstance`, `ScrollTarget`, `ScrollPoint`, `ScrollCoordinate`, `OffsetValue`, `OffsetContext`, `EasingValue`, `ScrollDetail`, `ScrollProgress`, `ScrollResult`, `ScrollEndReason`, `Align` and `Easing`.
+`ScrollToOptions`, `AutoScrollToOptions`, `ScrollToController`, `ScrollToInstance`, `BackToTopOptions`, `BackToTopController`, `ScrollTarget`, `ScrollPoint`, `ScrollCoordinate`, `OffsetValue`, `OffsetContext`, `EasingValue`, `ScrollDetail`, `ScrollProgress`, `ScrollResult`, `ScrollEndReason`, `Align` and `Easing`.
 
-| Constant                                                                             | Value                                                            |
-| ------------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
-| `ATTRIBUTE`                                                                          | `'data-scroll-to'`                                               |
-| `STATE_ATTRIBUTE`                                                                    | `'data-scroll-to-state'`                                         |
-| `EVENTS`                                                                             | `{ start: 'scroll-to:start', end: 'scroll-to:end' }`             |
-| `END_REASONS`                                                                        | `['arrived', 'interrupted', 'replaced', 'cancelled', 'missing']` |
+| Constant                                                                             | Value                                                                    |
+| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| `ATTRIBUTE`                                                                          | `'data-scroll-to'`                                                       |
+| `STATE_ATTRIBUTE`                                                                    | `'data-scroll-to-state'`                                                 |
+| `ARRIVED_ATTRIBUTE`                                                                  | `'data-scroll-to-arrived'`                                               |
+| `VISIBLE_ATTRIBUTE`                                                                  | `'data-scroll-to-visible'`                                               |
+| `PROPERTIES`                                                                         | `{ progress: '--scroll-to-progress', scrolled: '--scroll-to-scrolled' }` |
+| `HIGHLIGHT_DURATION`                                                                 | `1500`, the milliseconds of `highlight: true`                            |
+| `EVENTS`                                                                             | `{ start: 'scroll-to:start', end: 'scroll-to:end' }`                     |
+| `END_REASONS`                                                                        | `['arrived', 'interrupted', 'replaced', 'cancelled', 'missing']`         |
 | The default export is `scrollTo`; `@samline/scroll-to/vanilla` exports the same API. |
 
 ## window.ScrollTo
 
 The browser bundle (`dist/browser/scroll-to.global.js`) defines:
 
-| Member                                                                                                                                              | Description                                                             |
-| --------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| `ScrollTo.scrollTo`, `ScrollTo.scrollPosition`, `ScrollTo.cancelScroll`, `ScrollTo.isScrolling`, `ScrollTo.autoScrollTo`, `ScrollTo.createScrollTo` | Same as the package exports                                             |
-| `ScrollTo.auto(options?)`                                                                                                                           | Start (or restart) handling clicks with options; returns the controller |
-| `ScrollTo.controller`                                                                                                                               | The controller of the automatic run, or `null`                          |
+| Member                                                                                                                                                                    | Description                                                                                     |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `ScrollTo.scrollTo`, `ScrollTo.scrollPosition`, `ScrollTo.cancelScroll`, `ScrollTo.isScrolling`, `ScrollTo.autoScrollTo`, `ScrollTo.createScrollTo`, `ScrollTo.backToTop` | Same as the package exports                                                                     |
+| `ScrollTo.auto(options?)`                                                                                                                                                 | Start (or restart) handling clicks and back-to-top buttons with options; returns the controller |
+| `ScrollTo.controller`                                                                                                                                                     | The controller of the automatic run, or `null`                                                  |
 
-It starts on its own when the DOM is ready. With `data-manual` on the script tag it waits for `ScrollTo.auto()`; a call made before the DOM is ready also replaces the automatic start.
+It starts on its own when the DOM is ready, and turns every `[data-scroll-to-back-to-top]` element into a `backToTop` button; the attribute's value is the threshold (empty for one screen). `ScrollTo.controller.destroy()` stops both. With `data-manual` on the script tag it waits for `ScrollTo.auto()`; a call made before the DOM is ready also replaces the automatic start.

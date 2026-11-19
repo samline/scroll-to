@@ -182,4 +182,33 @@ test.describe('scroll-to copyable examples', () => {
     await expect.poll(() => page.evaluate(() => location.hash)).toBe('#warranty')
     await expect(page.locator('#warranty')).toBeFocused()
   })
+
+  test('a term link centers its definition and highlights it for a moment', async ({ page }) => {
+    await openDocument(page, find(scrollToExamples, 'highlight'))
+    await page.getByRole('link', { name: 'Latency' }).click()
+    const term = page.locator('#latency')
+    await expect(term).toHaveAttribute('data-scroll-to-arrived', '')
+    await expect(term).toBeFocused()
+    const middle = await term.evaluate(el => {
+      const box = el.getBoundingClientRect()
+      return Math.abs(box.top + box.height / 2 - innerHeight / 2) <= 2
+    })
+    expect(middle).toBe(true)
+    await expect(term).not.toHaveAttribute('data-scroll-to-arrived', { timeout: 3000 })
+  })
+
+  test('the back-to-top button appears after one screen and brings focus up', async ({ page }) => {
+    await openDocument(page, find(scrollToExamples, 'back-to-top'))
+    const button = page.locator('.back-to-top')
+    await expect(button).toHaveAttribute('data-scroll-to-visible', 'false')
+    await expect(button).toBeHidden()
+    await page.evaluate(() => scrollTo(0, innerHeight * 1.5))
+    await expect(button).toHaveAttribute('data-scroll-to-visible', 'true')
+    await expect(button).toBeVisible()
+    await button.focus()
+    await page.keyboard.press('Enter')
+    await expect.poll(() => page.evaluate(() => scrollY)).toBe(0)
+    await expect(page.locator('body')).toBeFocused()
+    await expect(button).toHaveAttribute('data-scroll-to-visible', 'false')
+  })
 })

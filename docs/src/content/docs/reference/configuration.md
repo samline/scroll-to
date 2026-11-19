@@ -28,6 +28,7 @@ sidebar:
 | `when`          | `'always'`                            | `'needed'` does not move when the target element is already fully visible below the offset                                                                                                                                                                                                                                                                        |
 | `behavior`      | `'smooth'`                            | `'instant'` jumps. Reduced motion always jumps.                                                                                                                                                                                                                                                                                                                   |
 | `interruptible` | `true`                                | Stop when the visitor takes over: the wheel, a touch, a key that scrolls, or a mouse press outside links and buttons                                                                                                                                                                                                                                              |
+| `highlight`     | `false`                               | Mark the target with `data-scroll-to-arrived` on arrival, for a CSS highlight: `true` for 1500 ms, or milliseconds                                                                                                                                                                                                                                                |
 | `focus`         | `false` (`true` for `autoScrollTo`)   | Move keyboard focus to the target on arrival. Targets that cannot take focus get `tabindex="-1"`.                                                                                                                                                                                                                                                                 |
 | `hash`          | `false` (`'push'` for `autoScrollTo`) | Write the target's `#id` to the URL on arrival: `'push'` adds a history entry, `'replace'` does not                                                                                                                                                                                                                                                               |
 | `signal`        | none                                  | An `AbortSignal`. Aborting it stops the scroll (`reason: 'cancelled'`); an aborted signal does not start one                                                                                                                                                                                                                                                      |
@@ -76,14 +77,21 @@ Set them on a trigger. They win over the options given to `autoScrollTo`.
 | `data-scroll-to-focus`     | `true`, `false`                          | `focus`                                          |
 | `data-scroll-to-hash`      | `push`, `replace`, `false`               | `hash`                                           |
 | `data-scroll-to-reveal`    | `true`, `false`                          | `reveal`                                         |
+| `data-scroll-to-highlight` | `true`, `false` or milliseconds          | `highlight`                                      |
+
+With the browser bundle, `data-scroll-to-back-to-top` on any element makes it a [back-to-top button](../api/#backtotopbutton-options); its value is the threshold, in pixels or `%`, and empty for one screen.
 
 ## State and events
 
-| Name                               | Where                                                                  | When                  |
-| ---------------------------------- | ---------------------------------------------------------------------- | --------------------- |
-| `data-scroll-to-state="scrolling"` | The scrolling element (`<html>` for the page) and the clicked trigger  | While the scroll runs |
-| `scroll-to:start`                  | The target, or the scrolling element for positions                     | When it starts        |
-| `scroll-to:end`                    | The target, or the scrolling element for positions and missing targets | When it ends, once    |
+| Name                               | Where                                                                  | When                                |
+| ---------------------------------- | ---------------------------------------------------------------------- | ----------------------------------- |
+| `data-scroll-to-state="scrolling"` | The scrolling element (`<html>` for the page) and the clicked trigger  | While the scroll runs               |
+| `--scroll-to-progress`             | The same elements, as an inline custom property from `0` to `1`        | While the scroll runs               |
+| `data-scroll-to-arrived`           | The target                                                             | For `highlight` ms after it arrives |
+| `data-scroll-to-visible`           | A `backToTop` button: `'true'` or `'false'`                            | Once it runs                        |
+| `--scroll-to-scrolled`             | A `backToTop` button, from `0` at the top to `1` at the end            | Once it runs                        |
+| `scroll-to:start`                  | The target, or the scrolling element for positions                     | When it starts                      |
+| `scroll-to:end`                    | The target, or the scrolling element for positions and missing targets | When it ends, once                  |
 
 The events bubble and carry the same details as the callbacks. [Lifecycle and events](../../guides/lifecycle/) shows how to use them.
 

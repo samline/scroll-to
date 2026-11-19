@@ -37,7 +37,7 @@ const sections = {
     description:
       'Same-page links and data-scroll-to triggers glide to their target, stop below your fixed header and hand focus to what they reveal.',
     descriptionContinuation: 'Install it, try the live preview, then read the full reference.',
-    footnotes: ['About 2.4 KB gzip', 'Zero dependencies', `${project.license} licensed`],
+    footnotes: ['About 5.5 KB gzip', 'Zero dependencies', `${project.license} licensed`],
     compatibilityLabel: 'ONE SMALL SCRIPT. RIGHT AT HOME IN YOUR STACK.',
     platforms: ['JavaScript', 'TypeScript', 'React', 'Vue', 'Svelte', 'Shopify', 'WordPress'],
   },
@@ -156,13 +156,13 @@ const sections = {
     items: [
       {
         title: 'Back to top',
-        context: 'data-scroll-to',
-        docsRoute: 'options' as const,
-        docsLabel: 'Read the options',
-        description: text('Any element can trigger a scroll.'),
+        context: 'data-scroll-to-back-to-top',
+        docsRoute: 'api' as const,
+        docsLabel: 'Read the API',
+        description: text('Shows after one screen, fills a ring, and brings focus up.'),
         code: code(
           'index.html',
-          `<button type="button" data-scroll-to="top">Back to top</button>`,
+          `<a class="back-to-top" href="#top" data-scroll-to-back-to-top>\n  Back to top\n</a>`,
           'html'
         ),
       },
@@ -180,15 +180,11 @@ const sections = {
       },
       {
         title: 'Highlight on arrival',
-        context: 'await',
-        docsRoute: 'api' as const,
-        docsLabel: 'Read the API',
-        description: text('Act once the scroll is over.'),
-        code: code(
-          'main.js',
-          `if (await scrollTo('#faq-4', { offset: 80 })) {\n  faq.classList.add('flash')\n}`,
-          'javascript'
-        ),
+        context: 'highlight',
+        docsRoute: 'options' as const,
+        docsLabel: 'Read the options',
+        description: text('The target gets data-scroll-to-arrived for a moment.'),
+        code: code('main.js', `autoScrollTo({ offset: 80, highlight: true })`, 'javascript'),
       },
     ],
   },

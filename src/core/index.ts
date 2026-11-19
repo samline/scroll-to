@@ -1,9 +1,13 @@
 export {
+  ARRIVED_ATTRIBUTE,
   ATTRIBUTE,
   EASINGS,
   END_REASONS,
   EVENTS,
+  HIGHLIGHT_DURATION,
+  PROPERTIES,
   STATE_ATTRIBUTE,
+  VISIBLE_ATTRIBUTE,
   cubicBezier,
 } from './scroll-to.js'
 export type {
@@ -23,4 +27,6 @@ export type {
   ScrollResult,
   ScrollEndReason,
   ScrollToInstance,
+  BackToTopOptions,
+  BackToTopController,
 } from './scroll-to.js'

@@ -13,15 +13,21 @@ import {
   type AutoScrollToOptions,
   type ScrollToController,
   type ScrollToInstance,
+  type BackToTopOptions,
+  type BackToTopController,
   type ScrollDetail,
   type ScrollEndReason,
   type ScrollResult,
   type ScrollPoint,
   type OffsetValue,
+  ARRIVED_ATTRIBUTE,
   ATTRIBUTE,
   EVENTS,
+  HIGHLIGHT_DURATION,
   INTERRUPTIONS,
+  PROPERTIES,
   STATE_ATTRIBUTE,
+  VISIBLE_ATTRIBUTE,
   align,
   clamp,
   durationFor,
@@ -311,6 +317,31 @@ const moveFocus = (target: Element | null) => {
   target.focus({ preventScroll: true })
 }
 
+const highlights = new WeakMap<Element, ReturnType<typeof setTimeout>>()
+
+/** Mark `target` as arrived for `time` ms; arriving again restarts the time. */
+const highlight = (target: Element, time: number) => {
+  clearTimeout(highlights.get(target))
+  target.setAttribute(ARRIVED_ATTRIBUTE, '')
+  highlights.set(
+    target,
+    setTimeout(() => {
+      highlights.delete(target)
+      target.removeAttribute(ARRIVED_ATTRIBUTE)
+    }, time)
+  )
+}
+
+/** Set (or with `null`, remove) a custom property on elements that have a style. */
+const setProperty = (nodes: Element[], name: string, value: number | null) => {
+  for (const node of nodes) {
+    const style = (node as HTMLElement).style
+    if (!style) continue
+    if (value === null) style.removeProperty(name)
+    else style.setProperty(name, String(Math.round(value * 1000) / 1000))
+  }
+}
+
 const writeHash = (target: Element | null, mode: ScrollToOptions['hash']) => {
   if (!mode) return
   const id = target instanceof Element ? target.id : ''
@@ -359,6 +390,7 @@ const run = (
   const marked = trigger ? [host, trigger] : [host]
   const begin = () => {
     for (const node of marked) node.setAttribute(STATE_ATTRIBUTE, 'scrolling')
+    setProperty(marked, PROPERTIES.progress, 0)
     const value = detail()
     options.onStart?.(value)
     emit(EVENTS.start, value)
@@ -367,8 +399,11 @@ const run = (
     if (arrived) {
       if (options.focus) moveFocus(element)
       writeHash(element, options.hash)
+      const time = options.highlight === true ? HIGHLIGHT_DURATION : options.highlight
+      if (element && typeof time === 'number' && time > 0) highlight(element, time)
     }
     for (const node of marked) node.removeAttribute(STATE_ATTRIBUTE)
+    setProperty(marked, PROPERTIES.progress, null)
   }
 
   const start = viewport(container)
@@ -427,6 +462,7 @@ const run = (
         start.y + (goal.top - start.y) * eased,
         start.x + (goal.left - start.x) * eased
       )
+      setProperty(marked, PROPERTIES.progress, eased)
       options.onProgress?.({ ...detail(), progress, eased })
       if (progress < 1) frame = requestAnimationFrame(step)
       else stop('arrived')
@@ -516,6 +552,11 @@ const triggerOptions = (trigger: Element, base: ScrollToOptions): ScrollToOption
   options.reveal = readBoolean(trigger, 'data-scroll-to-reveal', base.reveal ?? true)
   const hash = readEnum(trigger, 'data-scroll-to-hash', HASH, base.hash || 'false')
   options.hash = hash === 'false' ? false : hash
+  // A number of milliseconds, or true and false; anything else keeps the option.
+  const time = readNumber(trigger, 'data-scroll-to-highlight', NaN)
+  const on = readBoolean(trigger, 'data-scroll-to-highlight', true)
+  if (Number.isFinite(time)) options.highlight = time
+  else if (on === readBoolean(trigger, 'data-scroll-to-highlight', false)) options.highlight = on
   return options
 }
 
@@ -604,6 +645,96 @@ export const createScrollTo = (defaults: ScrollToOptions = {}): ScrollToInstance
       owner!.abort()
       for (const controller of controllers) controller.destroy()
       controllers.clear()
+    },
+  }
+}
+
+/**
+ * A "Back to top" button: `data-scroll-to-visible` is `'true'` once the
+ * container is scrolled past `threshold` and `'false'` before, and
+ * `--scroll-to-scrolled` (0–1) says how far down it is, for a progress ring.
+ * A click scrolls to `target` (the top by default) and moves focus there, so
+ * keyboard users do not stay on a button that hides. Returns
+ * `{ update, destroy }`.
+ */
+export const backToTop = (
+  button: Element | string | null,
+  { target = 'top', threshold = '100%', ...options }: BackToTopOptions = {}
+): BackToTopController => {
+  const none = { update: () => {}, destroy: () => {} }
+  if (!isBrowser()) return none
+  let element: Element | null = null
+  try {
+    element = typeof button === 'string' ? document.querySelector(button) : button
+  } catch {
+    // An invalid selector finds nothing.
+  }
+  if (!element) return none
+  const node = element
+  const container = resolveContainer(options.container)
+  // Scroll events of the page fire on the window, of an element on itself.
+  const events: Element | Window = container
+  let frame = 0
+  let alive = true
+
+  const update = () => {
+    frame = 0
+    if (!alive) return
+    const view = viewport(container)
+    const limit = typeof threshold === 'number' ? threshold : cssLength(threshold, view.height)
+    node.setAttribute(VISIBLE_ATTRIBUTE, String(view.y > 0 && view.y >= limit))
+    setProperty([node], PROPERTIES.scrolled, view.maxY > 0 ? Math.min(1, view.y / view.maxY) : 0)
+  }
+  const schedule = () => {
+    frame ||= requestAnimationFrame(update)
+  }
+
+  /** Focus lands where the visitor now is: the target, or the top of the container. */
+  const land = () => {
+    const resolved = resolveTarget(target, options)
+    let focus: Element | null = resolved instanceof Element ? resolved : null
+    if (!focus) focus = container === window ? document.body : (container as Element)
+    if (
+      !focus.hasAttribute('tabindex') &&
+      !focus.matches('a[href], button, input, select, textarea')
+    ) {
+      // Focusable for now only: removed again when focus moves on.
+      focus.setAttribute('tabindex', '-1')
+      focus.addEventListener('blur', () => focus!.removeAttribute('tabindex'), { once: true })
+    }
+    ;(focus as HTMLElement).focus?.({ preventScroll: true })
+  }
+
+  const onClick = (event: Event) => {
+    const mouse = event as MouseEvent
+    if (event.defaultPrevented || mouse.button > 0) return
+    if (mouse.metaKey || mouse.ctrlKey || mouse.shiftKey || mouse.altKey) return
+    // Handled here, so an `autoScrollTo` on the page leaves it alone.
+    event.preventDefault()
+    const { focus = true, ...rest } = options
+    void run(target, { ...rest, focus: false }, node).then(arrived => {
+      if (arrived && alive && focus && document.activeElement === node) land()
+    })
+  }
+
+  events.addEventListener('scroll', schedule, { passive: true })
+  window.addEventListener('resize', schedule, { passive: true })
+  node.addEventListener('click', onClick)
+  update()
+
+  return {
+    update: () => {
+      if (alive) update()
+    },
+    destroy: () => {
+      if (!alive) return
+      alive = false
+      cancelAnimationFrame(frame)
+      events.removeEventListener('scroll', schedule)
+      window.removeEventListener('resize', schedule)
+      node.removeEventListener('click', onClick)
+      node.removeAttribute(VISIBLE_ATTRIBUTE)
+      setProperty([node], PROPERTIES.scrolled, null)
     },
   }
 }

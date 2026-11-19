@@ -92,6 +92,12 @@ export interface ScrollToOptions {
   behavior?: 'smooth' | 'instant'
   /** Stop when the visitor scrolls, touches or presses a key. Defaults to `true`. */
   interruptible?: boolean
+  /**
+   * Mark the target with `data-scroll-to-arrived` once it arrives, for a CSS
+   * highlight: `true` for 1500 ms, or a number of milliseconds. Defaults to
+   * `false`.
+   */
+  highlight?: boolean | number
   /** Move keyboard focus to the target once it arrives. Defaults to `false`. */
   focus?: boolean
   /** Put the target's `#id` in the URL: `'push'`, `'replace'` or `false`. Defaults to `false`. */
@@ -173,9 +179,41 @@ export interface ScrollToController {
   destroy: () => void
 }
 
+export interface BackToTopOptions extends ScrollToOptions {
+  /** Where the button scrolls to. Defaults to `'top'`. */
+  target?: ScrollTarget
+  /**
+   * How far the container must be scrolled before the button shows: pixels,
+   * or a percentage of the container height (`'50%'`). Defaults to `'100%'`.
+   */
+  threshold?: number | string
+}
+
+export interface BackToTopController {
+  /** Measure again, after the content changed size without a scroll. */
+  update: () => void
+  /** Stop listening and remove the attributes. Later calls do nothing. */
+  destroy: () => void
+}
+
 export const ATTRIBUTE = 'data-scroll-to'
 /** Set to `'scrolling'` on the trigger and the scrolling element while a scroll runs. */
 export const STATE_ATTRIBUTE = 'data-scroll-to-state'
+/** Set on the target for `highlight` milliseconds once it arrives. */
+export const ARRIVED_ATTRIBUTE = 'data-scroll-to-arrived'
+/** `'true'` or `'false'` on a `backToTop` button, past its threshold or not. */
+export const VISIBLE_ATTRIBUTE = 'data-scroll-to-visible'
+/**
+ * CSS custom properties: `progress` (0–1, eased) on the trigger and the
+ * scrolling element while a scroll runs; `scrolled` (0–1) on a `backToTop`
+ * button, how far down the container is.
+ */
+export const PROPERTIES = {
+  progress: '--scroll-to-progress',
+  scrolled: '--scroll-to-scrolled',
+} as const
+/** How long `highlight: true` keeps the arrived attribute, in milliseconds. */
+export const HIGHLIGHT_DURATION = 1500
 /** Bubbling events dispatched on the target (or the scrolling element). */
 export const EVENTS = { start: 'scroll-to:start', end: 'scroll-to:end' } as const
 

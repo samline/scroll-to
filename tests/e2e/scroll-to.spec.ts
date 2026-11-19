@@ -311,3 +311,61 @@ test('closed details and hidden="until-found" open before the scroll', async ({ 
   })
   expect(result).toEqual({ arrived: true, matched: true, open: true, hidden: false, top: 0 })
 })
+
+test('highlight marks the target on arrival and the progress property follows the scroll', async ({
+  load,
+  page,
+}) => {
+  await load(
+    `<a id="go" href="#far" data-scroll-to-highlight="1500">Far</a>
+    <div style="height: 2000px"></div>
+    <section id="far" style="height: 400px">Far</section>
+    <div style="height: 1000px"></div>`,
+    'scroll-to'
+  )
+  await page.evaluate(() => {
+    const seen: number[] = []
+    ;(window as any).seen = seen
+    new MutationObserver(() => {
+      const value = document.documentElement.style.getPropertyValue('--scroll-to-progress')
+      if (value) seen.push(Number(value))
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['style'] })
+    ;(window as any).ScrollTo.auto({ duration: 400, hash: false })
+  })
+  await page.locator('#go').click()
+  await expect(page.locator('#far')).toHaveAttribute('data-scroll-to-arrived', '')
+  const seen = await page.evaluate(() => (window as any).seen as number[])
+  expect(seen.some(value => value > 0 && value < 1)).toBe(true)
+  expect(await page.evaluate(() => document.documentElement.getAttribute('style') ?? '')).toBe('')
+  await expect(page.locator('#far')).not.toHaveAttribute('data-scroll-to-arrived')
+})
+
+test('a back-to-top button shows past its threshold, scrolls up and moves focus', async ({
+  load,
+  page,
+}) => {
+  await load(
+    `<main id="main" style="height: 4000px">Long page</main>
+    <button id="top" data-scroll-to-back-to-top="600" style="position: fixed; bottom: 0">
+      Back to top
+    </button>`,
+    'scroll-to'
+  )
+  const button = page.locator('#top')
+  await expect(button).toHaveAttribute('data-scroll-to-visible', 'false')
+  await page.evaluate(() => scrollTo(0, 1600))
+  await expect(button).toHaveAttribute('data-scroll-to-visible', 'true')
+  const scrolled = Number(
+    await button.evaluate(node =>
+      (node as HTMLElement).style.getPropertyValue('--scroll-to-scrolled')
+    )
+  )
+  expect(scrolled).toBeGreaterThan(0.3)
+  expect(scrolled).toBeLessThan(0.7)
+
+  await button.focus()
+  await page.keyboard.press('Enter')
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0)
+  await expect(button).toHaveAttribute('data-scroll-to-visible', 'false')
+  await expect(page.locator('body')).toBeFocused()
+})
