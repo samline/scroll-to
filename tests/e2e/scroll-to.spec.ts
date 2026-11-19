@@ -369,3 +369,89 @@ test('a back-to-top button shows past its threshold, scrolls up and moves focus'
   await expect(button).toHaveAttribute('data-scroll-to-visible', 'false')
   await expect(page.locator('body')).toBeFocused()
 })
+
+test("container 'auto' scrolls a snapping box and the smooth page together", async ({
+  load,
+  page,
+}) => {
+  await load(
+    `<style>
+      html { scroll-behavior: smooth; scroll-snap-type: y mandatory; scroll-padding-top: 50px }
+      header { position: fixed; inset: 0 0 auto; height: 50px; background: #fff; z-index: 1 }
+      .snap { scroll-snap-align: start }
+      #box { height: 300px; overflow-y: auto; scroll-snap-type: y mandatory; scroll-behavior: smooth; scroll-snap-align: start }
+      #box p { height: 280px; margin: 0; scroll-snap-align: start }
+    </style>
+    <header id="header">Header</header>
+    <div class="snap" style="height: 1500px">Top</div>
+    <div id="box">${Array.from({ length: 8 }, (_, i) => `<p id="p${i}">Item ${i}</p>`).join('')}</div>
+    <div class="snap" style="height: 1500px">End</div>`,
+    'scroll-to'
+  )
+  const result = await page.evaluate(async () => {
+    const seen = new Set<string>()
+    const box = document.getElementById('box')!
+    const watch = setInterval(() => seen.add(getComputedStyle(box).scrollSnapType), 10)
+    const arrived = await (window as any).ScrollTo.scrollTo('#p5', {
+      container: 'auto',
+      offset: '#header',
+      duration: 500,
+    })
+    clearInterval(watch)
+    await new Promise(resolve => setTimeout(resolve, 300))
+    const target = document.getElementById('p5')!.getBoundingClientRect()
+    return {
+      arrived,
+      suspended: seen.has('none'),
+      restored: getComputedStyle(box).scrollSnapType,
+      inBox: Math.round(target.top - box.getBoundingClientRect().top),
+      boxTop: Math.round(box.getBoundingClientRect().top),
+      style: box.getAttribute('style'),
+    }
+  })
+  expect(result.arrived).toBe(true)
+  expect(result.suspended).toBe(true)
+  expect(result.restored).toMatch(/y mandatory/)
+  expect(result.style).toBeNull()
+  expect(result.inBox).toBe(0)
+  // The page keeps the header's 50px above the target.
+  expect(Math.abs(result.boxTop + result.inBox - 50)).toBeLessThanOrEqual(1)
+})
+
+test('right-to-left strips align to the right and step forward to the left', async ({
+  load,
+  page,
+}) => {
+  await load(
+    `<div id="strip" dir="rtl" style="display: flex; width: 600px; overflow-x: auto">
+      ${Array.from({ length: 10 }, (_, i) => `<div class="item" id="i${i}" style="flex: 0 0 200px; height: 80px">${i}</div>`).join('')}
+    </div>`,
+    'scroll-to'
+  )
+  const result = await page.evaluate(async () => {
+    const strip = document.getElementById('strip')!
+    const ScrollTo = (window as any).ScrollTo
+    const options = {
+      container: strip,
+      sections: '.item',
+      inline: 'start',
+      block: 'nearest',
+      duration: 200,
+    }
+    await ScrollTo.scrollTo('next', options)
+    await ScrollTo.scrollTo('next', options)
+    const afterNext = Math.round(strip.scrollLeft)
+    await ScrollTo.scrollTo('#i9', options)
+    const end = Math.round(strip.scrollLeft)
+    const right = (id: string) =>
+      Math.round(
+        strip.getBoundingClientRect().right -
+          document.getElementById(id)!.getBoundingClientRect().right
+      )
+    await ScrollTo.scrollTo('#i5', options)
+    return { afterNext, end, max: strip.scrollWidth - strip.clientWidth, aligned: right('i5') }
+  })
+  expect(result.afterNext).toBe(-400)
+  expect(result.end).toBe(-result.max)
+  expect(Math.abs(result.aligned)).toBeLessThanOrEqual(1)
+})

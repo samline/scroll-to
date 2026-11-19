@@ -504,4 +504,69 @@ main { min-height: 400vh; padding: 1rem; }
 backToTop('.back-to-top', { target: '#top' })`,
     },
   },
+  {
+    id: 'nested',
+    tab: 'Nested boxes',
+    title: 'A card in a strip, further down the page',
+    description:
+      "With container: 'auto', a link scrolls every box around its target, then the page, like scrollIntoView but with the offset, easing and focus. The strip snaps, and its snapping is paused while it moves, so it does not stutter. Switch it to right to left: inline start becomes the right edge.",
+    files: {
+      html: `<header id="header">
+  <a href="#card-2">Card 2</a>
+  <a href="#card-7">Card 7</a>
+  <a href="#card-11">Card 11</a>
+  <button type="button" id="direction" aria-pressed="false">Right to left</button>
+</header>
+<main>
+  <p class="intro">The shelf is further down. Its cards scroll sideways.</p>
+  <section aria-labelledby="shelf-title">
+    <h2 id="shelf-title">Shelf</h2>
+    <div class="strip" id="strip" tabindex="0" aria-label="Cards">
+      <article class="card" id="card-1">Card 1</article>
+      <article class="card" id="card-2">Card 2</article>
+      <article class="card" id="card-3">Card 3</article>
+      <article class="card" id="card-4">Card 4</article>
+      <article class="card" id="card-5">Card 5</article>
+      <article class="card" id="card-6">Card 6</article>
+      <article class="card" id="card-7">Card 7</article>
+      <article class="card" id="card-8">Card 8</article>
+      <article class="card" id="card-9">Card 9</article>
+      <article class="card" id="card-10">Card 10</article>
+      <article class="card" id="card-11">Card 11</article>
+      <article class="card" id="card-12">Card 12</article>
+    </div>
+  </section>
+</main>`,
+      css: `body { font-family: system-ui, sans-serif; margin: 0; }
+html { scroll-padding-top: 4rem; }
+header { position: fixed; inset: 0 0 auto; display: flex; gap: 1rem; align-items: center; height: 3rem; padding: 0 1rem; background: #fff; border-bottom: 1px solid #ddd; }
+main { padding: 4rem 1rem 60vh; }
+.intro { min-height: 120vh; }
+.strip { display: flex; gap: 1rem; max-width: 40rem; overflow-x: auto; padding: 1rem; scroll-snap-type: x mandatory; border: 1px solid #ddd; }
+.card { flex: 0 0 12rem; height: 8rem; padding: 1rem; scroll-snap-align: start; border-radius: 0.5rem; background: #fef3c7; }
+.card:focus { outline: 2px solid #78350f; outline-offset: 2px; }`,
+      js: `ScrollTo.auto({ container: 'auto', offset: '#header', inline: 'start', hash: false })
+
+const direction = document.querySelector('#direction')
+const strip = document.querySelector('#strip')
+
+direction.addEventListener('click', () => {
+  const rtl = direction.getAttribute('aria-pressed') !== 'true'
+  direction.setAttribute('aria-pressed', String(rtl))
+  strip.dir = rtl ? 'rtl' : 'ltr'
+})`,
+      esm: `import { autoScrollTo } from '@samline/scroll-to'
+
+autoScrollTo({ container: 'auto', offset: '#header', inline: 'start', hash: false })
+
+const direction = document.querySelector('#direction')
+const strip = document.querySelector('#strip')
+
+direction.addEventListener('click', () => {
+  const rtl = direction.getAttribute('aria-pressed') !== 'true'
+  direction.setAttribute('aria-pressed', String(rtl))
+  strip.dir = rtl ? 'rtl' : 'ltr'
+})`,
+    },
+  },
 ]

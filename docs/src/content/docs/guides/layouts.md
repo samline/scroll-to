@@ -1,7 +1,7 @@
 ---
 title: 'Layouts and focus'
 titleAccent: 'focus'
-description: Use @samline/scroll-to with fixed headers, skip links, scroll containers, horizontal tab strips, history and reduced motion.
+description: 'Use @samline/scroll-to with fixed headers, skip links, nested scroll containers, scroll snap, right-to-left strips, history and reduced motion.'
 locale: en
 sidebar:
   group: guides
@@ -51,6 +51,22 @@ When a panel scrolls instead of the page, pass it as `container`, in code or on 
 
 The offset and the alignment are measured inside the container.
 
+### Boxes inside boxes
+
+When the target sits in a box that scrolls, inside a page that scrolls too, pass `container: 'auto'` (or `data-scroll-to-container="auto"`). Like `scrollIntoView`, it scrolls every ancestor of the target that can scroll, then the page, but with your offset, easing, focus and hash:
+
+```js
+autoScrollTo({ container: 'auto', offset: '#header' })
+```
+
+- Ancestors that do not scroll, or have nothing left to scroll, are skipped, and so is a page that cannot scroll.
+- They all move together, in one animation. Each outer container measures the target where it is once the inner ones have moved, so it lands in place in all of them.
+- The `offset` applies to the outermost container, usually the page with its fixed header. Inner boxes align the target with `block` and `inline` only.
+- `when: 'needed'` is decided for each container: one that already shows the target stays still.
+- Positions such as `'top'`, `400` or `{ left }` have no element to follow, so `'auto'` scrolls the page for them.
+- Callbacks and events report the innermost container as `container`. `cancelScroll()` on any of the containers, the page included, stops the scroll, and `isScrolling()` is `true` for each of them while it runs.
+- `scrollPosition(target, { container: 'auto' })` returns the position for the innermost container.
+
 ## Horizontal strips
 
 Center the selected tab, chip or slide without moving the page:
@@ -60,6 +76,26 @@ scrollTo(tab, { container: tabs, inline: 'center', block: 'nearest' })
 ```
 
 `block: 'nearest'` keeps the vertical position unless the strip is cut off.
+
+### Scroll snap
+
+Strips and pages with `scroll-snap-type` would pull every frame of an animation back to the last snap point, so the scroll stutters or never leaves. While a scroll runs, `scroll-snap-type` is turned off on every container it moves, with an inline `none !important`. When it ends, your own value comes back, or the inline style is removed, and the browser snaps from there.
+
+Align the target where a snap point is, and nothing moves after the end. With `scroll-snap-align: start`, use `inline: 'start'` (or `block: 'start'`); if the container has `scroll-padding`, pass the same space as `offset: 'css'` for the vertical axis.
+
+### Right to left
+
+In a right-to-left page or strip (`dir="rtl"`), the inline axis starts on the right:
+
+- `inline: 'start'` aligns the target with the right edge and `inline: 'end'` with the left edge. `center` and `nearest` work the same way in both directions.
+- `'next'` moves forward in reading order, to the left, and `'prev'` back to the right.
+- Horizontal positions follow the browser: `scrollLeft` is `0` at the right and goes negative to the left, and `{ left }` positions and the `left` in callbacks use the same values. Relative moves are physical too: `{ left: '-=100%' }` pages forward, to the left.
+
+The direction is read from the container, and for the page from `<body>`, when the scroll starts.
+
+### CSS scroll-behavior
+
+`html { scroll-behavior: smooth }` (or on a container) keeps the browser's own jumps smooth for visitors without JavaScript. It does not slow down this package: every frame is set with `behavior: 'instant'`, which overrides the CSS, so the easing and duration you pass are the ones you see. Keep it in your stylesheet, and add `@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto } }` for visitors who ask for less motion.
 
 ## History
 

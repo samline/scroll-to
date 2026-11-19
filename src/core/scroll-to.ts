@@ -42,7 +42,9 @@ export type OffsetValue = number | string | Element | ((context: OffsetContext) 
 export interface ScrollToOptions {
   /**
    * What scrolls: the page (default), an element or a selector. Use the
-   * element for scrolling boxes, tab strips and carousels.
+   * element for scrolling boxes, tab strips and carousels. `'auto'` scrolls
+   * every ancestor of the target that scrolls, then the page, like
+   * `scrollIntoView`; the `offset` applies to the outermost one.
    */
   container?: Element | Window | string | null
   /**
@@ -56,7 +58,10 @@ export interface ScrollToOptions {
   offset?: OffsetValue | readonly OffsetValue[]
   /** Vertical alignment. Defaults to `'start'`. */
   block?: Align
-  /** Horizontal alignment. Defaults to `'nearest'`. */
+  /**
+   * Horizontal alignment. Right to left, `'start'` is the right edge.
+   * Defaults to `'nearest'`.
+   */
   inline?: Align
   /**
    * Duration in milliseconds, or `'auto'` to scale with the distance

@@ -91,6 +91,8 @@ const viewport = (container: Element | Window) => {
   if (container === window) {
     const root = document.scrollingElement ?? document.documentElement
     return {
+      // The page takes its direction from the body (or the root).
+      rtl: getComputedStyle(document.body ?? root).direction === 'rtl',
       top: 0,
       left: 0,
       width: root.clientWidth,
@@ -104,6 +106,7 @@ const viewport = (container: Element | Window) => {
   const element = container as Element
   const box = element.getBoundingClientRect()
   return {
+    rtl: getComputedStyle(element).direction === 'rtl',
     top: box.top + element.clientTop,
     left: box.left + element.clientLeft,
     width: element.clientWidth,
@@ -116,6 +119,13 @@ const viewport = (container: Element | Window) => {
 }
 
 type View = ReturnType<typeof viewport>
+
+/**
+ * A horizontal position clamped to what can scroll. Right to left, the
+ * position starts at `0` on the right and goes negative to the left.
+ */
+const clampLeft = (left: number, view: View) =>
+  view.rtl ? -clamp(-left, view.maxX) || 0 : clamp(left, view.maxX)
 
 /** A CSS length in pixels, with percentages of `size`; `0` for `auto` and the unknown. */
 const cssLength = (value: string, size: number) =>
@@ -234,8 +244,12 @@ const step = (direction: 'next' | 'prev', options: ScrollToOptions): Element | n
     const box = section.getBoundingClientRect()
     if (!box.width && !box.height) continue
     const goal = scrollPosition(section, { ...options, when: 'always' })!
-    // Along the axis that moves: vertical first, then horizontal.
-    const moved = Math.abs(goal.top - view.y) > 1 ? goal.top - view.y : goal.left - view.x
+    // Along the axis that moves: vertical first, then horizontal, forward in
+    // the reading direction.
+    const moved =
+      Math.abs(goal.top - view.y) > 1
+        ? goal.top - view.y
+        : (goal.left - view.x) * (view.rtl ? -1 : 1)
     if (direction === 'next' && moved > 1) return section
     if (direction === 'prev' && moved < -1) found = section
   }
@@ -266,14 +280,18 @@ export const scrollPosition = (
   options: Omit<ScrollToOptions, 'duration' | 'easing' | 'behavior'> = {}
 ): { top: number; left: number } | null => {
   if (!isBrowser()) return null
-  const container = resolveContainer(options.container)
   const resolved = resolveTarget(target, options)
   if (resolved === null) return null
+  // With 'auto', the nearest container that scrolls.
+  const container = containersFor(
+    options.container,
+    resolved instanceof Element ? resolved : null
+  )[0]!
   const view = viewport(container)
   if (!(resolved instanceof Element)) {
     return {
       top: clamp(coordinate(resolved.top, view.y, view.height), view.maxY),
-      left: clamp(coordinate(resolved.left, view.x, view.width), view.maxX),
+      left: clampLeft(coordinate(resolved.left, view.x, view.width), view),
     }
   }
   const offset = resolveOffset(options.offset, container, resolved, view)
@@ -285,7 +303,7 @@ export const scrollPosition = (
     box.left >= view.left &&
     box.right <= view.left + view.width
   ) {
-    return { top: clamp(view.y, view.maxY), left: clamp(view.x, view.maxX) }
+    return { top: clamp(view.y, view.maxY), left: clampLeft(view.x, view) }
   }
   const top = align(
     options.block ?? 'start',
@@ -295,15 +313,21 @@ export const scrollPosition = (
     view.top + offset,
     view.top + view.height
   )
+  // Right to left, the inline start is the right edge.
+  const inline = options.inline ?? 'nearest'
   const left = align(
-    options.inline ?? 'nearest',
+    view.rtl && inline !== 'center' && inline !== 'nearest'
+      ? inline === 'start'
+        ? 'end'
+        : 'start'
+      : inline,
     view.x,
     box.left,
     box.right,
     view.left,
     view.left + view.width
   )
-  return { top: clamp(top, view.maxY), left: clamp(left, view.maxX) }
+  return { top: clamp(top, view.maxY), left: clampLeft(left, view) }
 }
 
 const setScroll = (container: Element | Window, top: number, left: number) =>
@@ -332,13 +356,20 @@ const highlight = (target: Element, time: number) => {
   )
 }
 
+/** Drop a `style` attribute left empty, so the markup is as it was. */
+const tidy = (node: Element) => {
+  if (node.getAttribute('style') === '') node.removeAttribute('style')
+}
+
 /** Set (or with `null`, remove) a custom property on elements that have a style. */
 const setProperty = (nodes: Element[], name: string, value: number | null) => {
   for (const node of nodes) {
     const style = (node as HTMLElement).style
     if (!style) continue
-    if (value === null) style.removeProperty(name)
-    else style.setProperty(name, String(Math.round(value * 1000) / 1000))
+    if (value === null) {
+      style.removeProperty(name)
+      tidy(node)
+    } else style.setProperty(name, String(Math.round(value * 1000) / 1000))
   }
 }
 
@@ -352,6 +383,61 @@ const writeHash = (target: Element | null, mode: ScrollToOptions['hash']) => {
   history[mode === 'push' ? 'pushState' : 'replaceState'](history.state, '', url)
 }
 
+/** Whether `node` scrolls its overflow, and has some to scroll. */
+const scrolls = (node: Element) => {
+  const style = getComputedStyle(node)
+  const can = (overflow: string) => /^(auto|scroll|overlay)$/.test(overflow)
+  return (
+    (can(style.overflowY) && node.scrollHeight > node.clientHeight) ||
+    (can(style.overflowX) && node.scrollWidth > node.clientWidth)
+  )
+}
+
+/**
+ * What scrolls, innermost first. `container: 'auto'` is every ancestor of the
+ * target that scrolls, then the page, like `scrollIntoView`; anything else is
+ * one container.
+ */
+const containersFor = (
+  container: ScrollToOptions['container'],
+  element: Element | null
+): Array<Element | Window> => {
+  if (container !== 'auto') return [resolveContainer(container)]
+  const list: Array<Element | Window> = []
+  for (let node = element?.parentElement; node; node = node.parentElement) {
+    if (node === document.body || node === document.documentElement) break
+    if (scrolls(node)) list.push(node)
+  }
+  const view = viewport(window)
+  if (!list.length || view.maxY > 0 || view.maxX > 0) list.push(window)
+  return list
+}
+
+/** Turn off `scroll-snap-type` on `hosts` until the returned function restores it. */
+const suspendSnap = (hosts: Element[]) => {
+  const saved: Array<[Element, CSSStyleDeclaration, string, string]> = []
+  for (const host of hosts) {
+    const style = (host as HTMLElement).style
+    const type = getComputedStyle(host).getPropertyValue('scroll-snap-type')
+    if (!style || !type || type === 'none') continue
+    saved.push([
+      host,
+      style,
+      style.getPropertyValue('scroll-snap-type'),
+      style.getPropertyPriority('scroll-snap-type'),
+    ])
+    // Snapping after every frame would pull the scroll back to the last snap point.
+    style.setProperty('scroll-snap-type', 'none', 'important')
+  }
+  return () => {
+    for (const [host, style, value, priority] of saved) {
+      if (value) style.setProperty('scroll-snap-type', value, priority)
+      else style.removeProperty('scroll-snap-type')
+      tidy(host)
+    }
+  }
+}
+
 const run = (
   target: ScrollTarget,
   options: ScrollToOptions,
@@ -359,13 +445,19 @@ const run = (
   owner?: AbortSignal
 ): Promise<boolean> => {
   if (!isBrowser()) return Promise.resolve(false)
-  const container = resolveContainer(options.container)
   const resolved = resolveTarget(target, options)
   const element = resolved instanceof Element ? resolved : null
   if (element && options.reveal !== false) reveal(element)
-  const host = hostOf(container)
-  // `when` decides once, at the start; frames measure the destination again without it.
-  const frameOptions: ScrollToOptions = { ...options, when: 'always' }
+  const containers = containersFor(options.container, element)
+  const container = containers[0]!
+  const hosts = containers.map(hostOf)
+  // The offset belongs to the outermost container, usually the page with its header.
+  const { offset, ...rest } = options
+  const each = containers.map((one, index): ScrollToOptions => {
+    const own: ScrollToOptions = { ...rest, container: one }
+    if (offset !== undefined && index === containers.length - 1) own.offset = offset
+    return own
+  })
   const signals = [options.signal, owner].filter((signal): signal is AbortSignal => !!signal)
 
   const detail = (): ScrollDetail => {
@@ -373,7 +465,7 @@ const run = (
     return { target: element, container, trigger, top: view.y, left: view.x }
   }
   const emit = (type: string, value: ScrollDetail) =>
-    (element ?? host).dispatchEvent(new CustomEvent(type, { bubbles: true, detail: value }))
+    (element ?? hosts[0]!).dispatchEvent(new CustomEvent(type, { bubbles: true, detail: value }))
   const end = (reason: ScrollEndReason): boolean => {
     const result: ScrollResult = { ...detail(), arrived: reason === 'arrived', reason }
     options.onEnd?.(result)
@@ -381,21 +473,24 @@ const run = (
     return result.arrived
   }
 
-  const first = resolved && scrollPosition(resolved, options)
-  if (!first) return Promise.resolve(end('missing'))
+  const firsts = resolved ? each.map(own => scrollPosition(resolved, own)) : []
+  if (!firsts[0]) return Promise.resolve(end('missing'))
   if (signals.some(signal => signal.aborted)) return Promise.resolve(end('cancelled'))
 
-  running.get(container)?.cancel('replaced')
+  for (const one of containers) running.get(one)?.cancel('replaced')
 
-  const marked = trigger ? [host, trigger] : [host]
+  const marked = trigger ? [...hosts, trigger] : hosts
+  let restoreSnap = () => {}
   const begin = () => {
     for (const node of marked) node.setAttribute(STATE_ATTRIBUTE, 'scrolling')
     setProperty(marked, PROPERTIES.progress, 0)
+    restoreSnap = suspendSnap(hosts)
     const value = detail()
     options.onStart?.(value)
     emit(EVENTS.start, value)
   }
   const finish = (arrived: boolean) => {
+    restoreSnap()
     if (arrived) {
       if (options.focus) moveFocus(element)
       writeHash(element, options.hash)
@@ -406,17 +501,43 @@ const run = (
     setProperty(marked, PROPERTIES.progress, null)
   }
 
-  const start = viewport(container)
-  // Positions are fixed at the start, so relative ones (`'+=400'`) do not keep moving.
-  const goalTarget: ScrollTarget = element ?? { top: first.top, left: first.left }
-  const distance = Math.hypot(first.top - start.y, first.left - start.x)
+  const starts = containers.map(viewport)
+  const plans = containers.map((one, index) => {
+    const first = firsts[index] ?? { top: starts[index]!.y, left: starts[index]!.x }
+    const start = starts[index]!
+    return {
+      one,
+      start,
+      first,
+      // `when` decides once, at the start: a container it keeps still stays still.
+      still: Math.hypot(first.top - start.y, first.left - start.x) < 1,
+      // Positions are fixed at the start, so relative ones (`'+=400'`) do not keep moving.
+      goal: (element ?? { top: first.top, left: first.left }) as ScrollTarget,
+      own: { ...each[index]!, when: 'always' } as ScrollToOptions,
+    }
+  })
+  const moving = plans.filter(plan => !plan.still)
+  const distance = Math.max(
+    0,
+    ...moving.map(({ first, start }) => Math.hypot(first.top - start.y, first.left - start.x))
+  )
   const duration = durationFor(distance, options)
-  const instant =
-    options.behavior === 'instant' || prefersReducedMotion() || duration === 0 || distance < 1
+  // Innermost first, so each outer container measures the target where it now is.
+  const move = (eased: number) => {
+    for (const { one, start, first, goal, own } of moving) {
+      const to = scrollPosition(goal, own) ?? first
+      setScroll(one, start.y + (to.top - start.y) * eased, start.x + (to.left - start.x) * eased)
+    }
+  }
 
-  if (instant) {
+  if (
+    options.behavior === 'instant' ||
+    prefersReducedMotion() ||
+    duration === 0 ||
+    !moving.length
+  ) {
     begin()
-    setScroll(container, first.top, first.left)
+    move(1)
     options.onProgress?.({ ...detail(), progress: 1, eased: 1 })
     finish(true)
     return Promise.resolve(end('arrived'))
@@ -428,10 +549,13 @@ const run = (
   return new Promise<boolean>(resolve => {
     let frame = 0
     let begun: number | null = null
+    let done = false
 
     const stop = (reason: ScrollEndReason) => {
+      if (done) return
+      done = true
       cancelAnimationFrame(frame)
-      if (running.get(container) === entry) running.delete(container)
+      for (const one of containers) if (running.get(one) === entry) running.delete(one)
       if (interruptible) {
         for (const type of INTERRUPTIONS) window.removeEventListener(type, interrupt)
       }
@@ -444,7 +568,7 @@ const run = (
     }
     const abort = () => stop('cancelled')
     const entry: Running = { cancel: stop, target: element }
-    running.set(container, entry)
+    for (const one of containers) running.set(one, entry)
     if (interruptible) {
       for (const type of INTERRUPTIONS) window.addEventListener(type, interrupt, { passive: true })
     }
@@ -454,14 +578,9 @@ const run = (
     const step = (now: number) => {
       begun ??= now
       const progress = duration ? Math.min(1, (now - begun) / duration) : 1
-      // Measure again: the target may have moved while content loaded.
-      const goal = scrollPosition(goalTarget, frameOptions) ?? first
       const eased = easing(progress)
-      setScroll(
-        container,
-        start.y + (goal.top - start.y) * eased,
-        start.x + (goal.left - start.x) * eased
-      )
+      // Measure again on every frame: the target may have moved while content loaded.
+      move(eased)
       setProperty(marked, PROPERTIES.progress, eased)
       options.onProgress?.({ ...detail(), progress, eased })
       if (progress < 1) frame = requestAnimationFrame(step)

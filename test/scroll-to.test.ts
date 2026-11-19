@@ -139,8 +139,9 @@ describe('scrollTo', () => {
 
     installMotion(false)
     spy.mockClear()
-    await scrollTo('#usage')
-    expect(spy).toHaveBeenCalledTimes(1)
+    // Already there: it arrives without touching the scroll position.
+    await expect(scrollTo('#usage')).resolves.toBe(true)
+    expect(spy).not.toHaveBeenCalled()
     await scrollTo(0, { duration: 0 })
     expect(state.y).toBe(0)
   })

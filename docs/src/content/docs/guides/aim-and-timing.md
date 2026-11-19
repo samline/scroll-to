@@ -117,7 +117,7 @@ next.addEventListener('click', () => scrollTo({ left: '+=100%' }, { container: s
 prev.addEventListener('click', () => scrollTo({ left: '-=100%' }, { container: strip }))
 ```
 
-Percentages on `left` are of the container width. Combine it with CSS `scroll-snap-type` on the strip if you want it to settle on items.
+Percentages on `left` are of the container width. Combine it with CSS `scroll-snap-type` on the strip if you want it to settle on items: snapping is paused while the scroll runs. In a right-to-left strip, `'-=100%'` is forward ([Layouts](../layouts/#right-to-left)).
 
 ## Only when needed
 

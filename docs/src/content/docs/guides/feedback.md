@@ -101,7 +101,7 @@ With the browser bundle no code is needed: `data-scroll-to-back-to-top` on the e
 
 ```html
 <a class="back-to-top" href="#top" data-scroll-to-back-to-top="600">Back to top</a>
-<script src="https://cdn.jsdelivr.net/npm/@samline/scroll-to@1.4.0/dist/browser/scroll-to.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@samline/scroll-to@1.5.0/dist/browser/scroll-to.global.js"></script>
 ```
 
 ### Show it once it helps

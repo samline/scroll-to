@@ -37,7 +37,7 @@ const sections = {
     description:
       'Same-page links and data-scroll-to triggers glide to their target, stop below your fixed header and hand focus to what they reveal.',
     descriptionContinuation: 'Install it, try the live preview, then read the full reference.',
-    footnotes: ['About 5.5 KB gzip', 'Zero dependencies', `${project.license} licensed`],
+    footnotes: ['About 6.1 KB gzip', 'Zero dependencies', `${project.license} licensed`],
     compatibilityLabel: 'ONE SMALL SCRIPT. RIGHT AT HOME IN YOUR STACK.',
     platforms: ['JavaScript', 'TypeScript', 'React', 'Vue', 'Svelte', 'Shopify', 'WordPress'],
   },
@@ -78,7 +78,7 @@ const sections = {
         icon: 'move',
         title: 'Any container, both axes',
         description: text(
-          'Scroll the page or a box, align to the start, center, end or nearest edge, and center tabs in a horizontal strip.'
+          'Scroll the page, a box or boxes inside boxes in one move, with snapping paused on the way and right to left handled.'
         ),
       },
       markup: {

@@ -15,7 +15,7 @@ sidebar:
 
 | Option          | Default                               | Description                                                                                                                                                                                                                                                                                                                                                       |
 | --------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `container`     | the page                              | What scrolls: an element or a selector. Use it for boxes, tab strips and carousels.                                                                                                                                                                                                                                                                               |
+| `container`     | the page                              | What scrolls: an element or a selector. Use it for boxes, tab strips and carousels. `'auto'` scrolls every box around the target, then the page, like `scrollIntoView`; the `offset` applies to the outermost one                                                                                                                                                 |
 | `offset`        | `0`                                   | Space kept above the target: pixels (`80` or `'80px'`), a percentage of the container height (`'10%'`), an element or selector whose height is used (`'#header'`), `'auto'` (fixed and sticky elements stuck at the top), `'css'` (`scroll-padding-top` plus `scroll-margin-top`), a function `({ container, target }) => number`, or an array of these, added up |
 | `block`         | `'start'`                             | Vertical alignment: `start`, `center`, `end` or `nearest` (only scrolls when the target is not fully visible)                                                                                                                                                                                                                                                     |
 | `inline`        | `'nearest'`                           | Horizontal alignment, same values                                                                                                                                                                                                                                                                                                                                 |
@@ -66,7 +66,7 @@ Set them on a trigger. They win over the options given to `autoScrollTo`.
 | -------------------------- | ---------------------------------------- | ------------------------------------------------ |
 | `data-scroll-to`           | target                                   | The target. Empty on a link: its `href` is used. |
 | `data-scroll-to-offset`    | pixels, `%`, a selector, `auto` or `css` | `offset`                                         |
-| `data-scroll-to-container` | selector                                 | `container`                                      |
+| `data-scroll-to-container` | selector or `auto`                       | `container`                                      |
 | `data-scroll-to-block`     | `start`, `center`, `end`, `nearest`      | `block`                                          |
 | `data-scroll-to-inline`    | `start`, `center`, `end`, `nearest`      | `inline`                                         |
 | `data-scroll-to-duration`  | milliseconds                             | `duration`                                       |
@@ -94,6 +94,12 @@ With the browser bundle, `data-scroll-to-back-to-top` on any element makes it a 
 | `scroll-to:end`                    | The target, or the scrolling element for positions and missing targets | When it ends, once                  |
 
 The events bubble and carry the same details as the callbacks. [Lifecycle and events](../../guides/lifecycle/) shows how to use them.
+
+## While it runs
+
+- `scroll-snap-type` is turned off on every container that moves, with an inline `none !important`, and restored when the scroll ends.
+- Each frame is set with `behavior: 'instant'`, so CSS `scroll-behavior: smooth` does not add its own glide.
+- In right-to-left containers, `inline: 'start'` is the right edge, `'next'` steps to the left, and horizontal positions are `0` at the right and negative to the left, as `scrollLeft` reads.
 
 ## Clicks
 

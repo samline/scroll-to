@@ -73,7 +73,7 @@ For Shopify, WordPress or plain HTML pages without a build step, load the browse
 
 ```html
 <script
-  src="https://cdn.jsdelivr.net/npm/@samline/scroll-to@1.4.0/dist/browser/scroll-to.global.js"
+  src="https://cdn.jsdelivr.net/npm/@samline/scroll-to@1.5.0/dist/browser/scroll-to.global.js"
   defer
 ></script>
 ```
@@ -122,7 +122,7 @@ The wheel, a touch, a key that scrolls or a press on the scrollbar stops the scr
 
 ### Any container
 
-Scroll the page or any box, and center the selected tab of a horizontal strip without moving the page. Triggers can carry their own offset, container, alignment and duration as attributes.
+Scroll the page or any box, and center the selected tab of a horizontal strip without moving the page. `container: 'auto'` scrolls every box around the target and then the page in one animation, like `scrollIntoView` with an offset. Scroll snapping is paused while it moves, CSS `scroll-behavior: smooth` never doubles the glide, and right-to-left strips align and step in reading order. Triggers can carry their own offset, container, alignment and duration as attributes.
 
 ## API at a glance
 
@@ -143,6 +143,7 @@ Scroll the page or any box, and center the selected tab of a horizontal strip wi
 | `'next'`, `'prev'`, `sections`     | Step to the next or previous section.                                                   |
 | `highlight`                        | Mark the target with `data-scroll-to-arrived` on arrival, for a CSS highlight.          |
 | `backToTop(button, options?)`      | A back-to-top button with `data-scroll-to-visible` and `--scroll-to-scrolled`.          |
+| `container: 'auto'`                | Scroll every box around the target, then the page, in one animation.                    |
 | `reveal`                           | Open closed `<details>` and `hidden="until-found"` around the target (default `true`).  |
 | `scroll-to:start`, `scroll-to:end` | Bubbling events on the target, with the same details as the callbacks.                  |
 
@@ -163,7 +164,7 @@ Read the [documentation](https://samline.github.io/scroll-to/docs/) for the full
 | [Installation](https://samline.github.io/scroll-to/docs/getting-started/)         | npm, CDN and the first links.                                                            |
 | [API reference](https://samline.github.io/scroll-to/docs/reference/api/)          | Every function, `createScrollTo`, the events, the types and `window.ScrollTo`.           |
 | [Options](https://samline.github.io/scroll-to/docs/reference/configuration/)      | Options, targets and attributes.                                                         |
-| [Layouts](https://samline.github.io/scroll-to/docs/guides/layouts/)               | Fixed headers, skip links, containers, tabs and history.                                 |
+| [Layouts](https://samline.github.io/scroll-to/docs/guides/layouts/)               | Fixed headers, skip links, nested boxes, scroll snap, right to left, tabs and history.   |
 | [Aim and timing](https://samline.github.io/scroll-to/docs/guides/aim-and-timing/) | Every offset, relative targets and points, `when`, speed, durations and easing.          |
 | [Sections](https://samline.github.io/scroll-to/docs/guides/sections/)             | Next and previous, hidden content, per-link focus and hash, and what stops a scroll.     |
 | [Lifecycle](https://samline.github.io/scroll-to/docs/guides/lifecycle/)           | Callbacks, end reasons, events, the state attribute, `AbortSignal` and `createScrollTo`. |

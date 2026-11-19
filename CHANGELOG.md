@@ -2,6 +2,21 @@
 
 All notable changes to this package. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow [semver](https://semver.org/).
 
+## [1.5.0] - 2026-11-18
+
+### Added
+
+- `container: 'auto'` (and `data-scroll-to-container="auto"`) scrolls every ancestor of the target that scrolls, then the page, in one animation, like `scrollIntoView` with this package's offset, easing, focus and hash. The `offset` applies to the outermost container, `when: 'needed'` is decided for each one, callbacks report the innermost container, and `cancelScroll()` or `isScrolling()` on any of them sees the scroll.
+- Right-to-left containers and pages: `inline: 'start'` and `'end'` follow the reading direction, `'next'` and `'prev'` step in reading order, and horizontal positions are clamped to the negative range browsers use.
+- Documentation: nested boxes, scroll snap, right to left and CSS `scroll-behavior` in the Layouts guide, and a Nested boxes example.
+
+### Changed
+
+- `scroll-snap-type` is turned off on the containers a scroll moves while it runs, and restored when it ends, so snapping strips and pages no longer stutter or pull the scroll back.
+- A target that is already in place arrives without calling `scrollTo()` on its container.
+- Inline styles the package added and removed (`--scroll-to-progress`, the paused snap) no longer leave an empty `style` attribute behind.
+- Size budgets: 6.2 KB gzip for the package and 6.3 KB for the browser bundle (from 5.6 and 5.7 KB).
+
 ## [1.4.0] - 2026-11-18
 
 ### Added

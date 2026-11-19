@@ -1,0 +1,103 @@
+---
+import './_shared.css'
+---
+
+<div class="preview scroll-to-example">
+  <div class="controls">
+    <a href="#scroll-to-card-2" class="pill">Card 2</a>
+    <a href="#scroll-to-card-7" class="pill">Card 7</a>
+    <a href="#scroll-to-card-11" class="pill">Card 11</a>
+    <button type="button" class="pill" data-direction aria-pressed="false">Right to left</button>
+  </div>
+  <div class="box" data-preview="nested" tabindex="0" aria-label="Page with a shelf">
+    <div class="intro"><p>The shelf is further down. Its cards scroll sideways.</p></div>
+    <div class="strip" data-strip tabindex="0" aria-label="Cards">
+      {Array.from({ length: 12 }, (_, i) => (
+        <article class="card" id={`scroll-to-card-${i + 1}`}>
+          <p class="part-title">Card {i + 1}</p>
+        </article>
+      ))}
+    </div>
+    <div class="outro"></div>
+  </div>
+</div>
+
+<script>
+  import { autoScrollTo } from '@samline/scroll-to'
+  import { preview } from '../../shared/lib/preview'
+
+  preview('nested', stage => {
+    const box = stage.querySelector<HTMLElement>('[data-preview="nested"]')!
+    const root = box.closest('.preview')!
+    const strip = box.querySelector<HTMLElement>('[data-strip]')!
+    const direction = root.querySelector<HTMLElement>('[data-direction]')!
+    const onDirection = () => {
+      const rtl = direction.getAttribute('aria-pressed') !== 'true'
+      direction.setAttribute('aria-pressed', String(rtl))
+      strip.dir = rtl ? 'rtl' : 'ltr'
+    }
+    direction.addEventListener('click', onDirection)
+
+    // Every box around the card scrolls: the strip, then this box, then the page if needed.
+    const controller = autoScrollTo({
+      scope: root,
+      container: 'auto',
+      block: 'nearest',
+      inline: 'start',
+      hash: false,
+      initialHash: false,
+    })
+    return () => {
+      controller.destroy()
+      direction.removeEventListener('click', onDirection)
+      direction.setAttribute('aria-pressed', 'false')
+      strip.removeAttribute('dir')
+      strip.scrollLeft = 0
+      box.scrollTop = 0
+    }
+  })
+</script>
+
+<style>
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .controls a {
+    text-decoration: none;
+  }
+  .controls [aria-pressed='true'] {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+  .intro {
+    min-height: 24rem;
+    padding: 1rem;
+  }
+  .outro {
+    min-height: 6rem;
+  }
+  .strip {
+    display: flex;
+    gap: 0.75rem;
+    margin: 0 1rem;
+    padding: 0.75rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    border: 0.0625rem solid var(--color-border);
+    border-radius: var(--radius-control);
+  }
+  .card {
+    flex: 0 0 9rem;
+    height: 6rem;
+    padding: 0.75rem;
+    scroll-snap-align: start;
+    border-radius: var(--radius-control);
+    background: var(--color-accent-soft);
+  }
+  .card:focus {
+    outline: 0.125rem solid var(--color-accent);
+    outline-offset: 0.125rem;
+  }
+</style>

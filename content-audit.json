@@ -1,6 +1,6 @@
 {
   "status": "verified",
-  "packageVersion": "1.4.0",
+  "packageVersion": "1.5.0",
   "capabilityReview": {
     "status": "verified",
     "integrations": [
@@ -89,6 +89,12 @@
         "evidence": "test/feedback.test.ts (backToTop), test/global.test.ts, tests/e2e/scroll-to.spec.ts, tests/e2e/examples.spec.ts",
         "destination": "site/examples/back-to-top.astro",
         "reviewed": true
+      },
+      {
+        "name": "Nested boxes, scroll snap and right to left (container 'auto')",
+        "evidence": "test/containers.test.ts, tests/e2e/scroll-to.spec.ts, tests/e2e/examples.spec.ts",
+        "destination": "site/examples/nested.astro",
+        "reviewed": true
       }
     ],
     "onboarding": {
@@ -104,7 +110,7 @@
   "sources": [
     {
       "source": "README.md",
-      "sha256": "2f8e5b404435b8ca47264fa2dfd40f6cb2020fd92adf019eeb304b9b10a14cb0",
+      "sha256": "e1ca553b15acbd5dc82065ad6ea6f118702b67c36d99c1dfc0a3c6da1e78fc27",
       "destination": "docs/src/content/docs/index.mdx",
       "reviewed": true
     },
@@ -116,7 +122,7 @@
     },
     {
       "source": "src/core/scroll-to.ts",
-      "sha256": "a42f1c2abf96c824725ed90cc876c63e29a284e465678289dccae252bb7fd158",
+      "sha256": "109ae2920156dd25381e96a36657ac96e83064d61feb14c79aca2a4dc8b6acdd",
       "destination": "docs/src/content/docs/reference/api.md",
       "reviewed": true
     },
@@ -140,55 +146,55 @@
     },
     {
       "source": "src/core/scroll-to.ts",
-      "sha256": "a42f1c2abf96c824725ed90cc876c63e29a284e465678289dccae252bb7fd158",
+      "sha256": "109ae2920156dd25381e96a36657ac96e83064d61feb14c79aca2a4dc8b6acdd",
       "destination": "docs/src/content/docs/reference/configuration.md",
       "reviewed": true
     },
     {
       "source": "src/core/scroll-to.ts",
-      "sha256": "a42f1c2abf96c824725ed90cc876c63e29a284e465678289dccae252bb7fd158",
+      "sha256": "109ae2920156dd25381e96a36657ac96e83064d61feb14c79aca2a4dc8b6acdd",
       "destination": "docs/src/content/docs/guides/layouts.md",
       "reviewed": true
     },
     {
       "source": "src/core/scroll-to.ts",
-      "sha256": "a42f1c2abf96c824725ed90cc876c63e29a284e465678289dccae252bb7fd158",
+      "sha256": "109ae2920156dd25381e96a36657ac96e83064d61feb14c79aca2a4dc8b6acdd",
       "destination": "docs/src/content/docs/guides/frameworks.md",
       "reviewed": true
     },
     {
       "source": "src/vanilla/scroll-to.ts",
-      "sha256": "031d44d4f124affea3342f7456fd639892ccce66c854353903141745bcb90cbe",
+      "sha256": "b4ff2abc1f448fd4ac2de255bf6236f8ee5eb27ea99433dc70f532151f46d850",
       "destination": "docs/src/content/docs/guides/lifecycle.md",
       "reviewed": true
     },
     {
       "source": "src/core/scroll-to.ts",
-      "sha256": "a42f1c2abf96c824725ed90cc876c63e29a284e465678289dccae252bb7fd158",
+      "sha256": "109ae2920156dd25381e96a36657ac96e83064d61feb14c79aca2a4dc8b6acdd",
       "destination": "docs/src/content/docs/guides/lifecycle.md",
       "reviewed": true
     },
     {
       "source": "src/vanilla/scroll-to.ts",
-      "sha256": "031d44d4f124affea3342f7456fd639892ccce66c854353903141745bcb90cbe",
+      "sha256": "b4ff2abc1f448fd4ac2de255bf6236f8ee5eb27ea99433dc70f532151f46d850",
       "destination": "docs/src/content/docs/guides/aim-and-timing.md",
       "reviewed": true
     },
     {
       "source": "src/core/scroll-to.ts",
-      "sha256": "a42f1c2abf96c824725ed90cc876c63e29a284e465678289dccae252bb7fd158",
+      "sha256": "109ae2920156dd25381e96a36657ac96e83064d61feb14c79aca2a4dc8b6acdd",
       "destination": "docs/src/content/docs/guides/aim-and-timing.md",
       "reviewed": true
     },
     {
       "source": "src/vanilla/scroll-to.ts",
-      "sha256": "031d44d4f124affea3342f7456fd639892ccce66c854353903141745bcb90cbe",
+      "sha256": "b4ff2abc1f448fd4ac2de255bf6236f8ee5eb27ea99433dc70f532151f46d850",
       "destination": "docs/src/content/docs/guides/sections.md",
       "reviewed": true
     },
     {
       "source": "src/core/scroll-to.ts",
-      "sha256": "a42f1c2abf96c824725ed90cc876c63e29a284e465678289dccae252bb7fd158",
+      "sha256": "109ae2920156dd25381e96a36657ac96e83064d61feb14c79aca2a4dc8b6acdd",
       "destination": "docs/src/content/docs/guides/sections.md",
       "reviewed": true
     }
@@ -238,7 +244,12 @@
       "source": "highlight, data-scroll-to-highlight, data-scroll-to-arrived, --scroll-to-progress, backToTop, data-scroll-to-visible, --scroll-to-scrolled, data-scroll-to-back-to-top",
       "destination": "docs/src/content/docs/guides/feedback.md",
       "reviewed": true
+    },
+    {
+      "source": "container 'auto', scroll-snap suspension, right to left, CSS scroll-behavior",
+      "destination": "docs/src/content/docs/guides/layouts.md",
+      "reviewed": true
     }
   ],
-  "notes": "Content reviewed in the utils collection site (1.0.0), then moved to this repository's standalone site on 2026-11-14. 1.1.0 added the lifecycle guide and the progress and events examples; 1.2.0 added the aim and timing guide and the stacked and pages examples; 1.3.0 added the sections guide and the steps and faq examples; 1.4.0 added the highlight and back to top guide and the highlight and back-to-top examples. Source hashes were recomputed against @samline/scroll-to@1.4.0."
+  "notes": "Content reviewed in the utils collection site (1.0.0), then moved to this repository's standalone site on 2026-11-14. 1.1.0 added the lifecycle guide and the progress and events examples; 1.2.0 added the aim and timing guide and the stacked and pages examples; 1.3.0 added the sections guide and the steps and faq examples; 1.4.0 added the highlight and back to top guide and the highlight and back-to-top examples; 1.5.0 added nested boxes, scroll snap and right to left to the layouts guide and the nested example. Source hashes were recomputed against @samline/scroll-to@1.5.0."
 }

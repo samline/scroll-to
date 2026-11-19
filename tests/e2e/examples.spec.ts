@@ -211,4 +211,29 @@ test.describe('scroll-to copyable examples', () => {
     await expect(page.locator('body')).toBeFocused()
     await expect(button).toHaveAttribute('data-scroll-to-visible', 'false')
   })
+
+  test('a card link scrolls the strip and the page, in both directions', async ({ page }) => {
+    await openDocument(page, find(scrollToExamples, 'nested'))
+    const header = await page.locator('#header').evaluate(el => el.offsetHeight)
+    const edges = (id: string) =>
+      page.evaluate(id => {
+        const strip = document.getElementById('strip')!.getBoundingClientRect()
+        const card = document.getElementById(id)!.getBoundingClientRect()
+        return {
+          left: Math.round(card.left - strip.left - 1),
+          right: Math.round(strip.right - 1 - card.right),
+          top: Math.round(card.top),
+        }
+      }, id)
+
+    await page.getByRole('link', { name: 'Card 7' }).click()
+    await expect(page.locator('#card-7')).toBeFocused()
+    await expect.poll(async () => Math.abs((await edges('card-7')).left) <= 1).toBe(true)
+    expect((await edges('card-7')).top).toBeGreaterThanOrEqual(header)
+
+    await page.getByRole('button', { name: 'Right to left' }).click()
+    await page.getByRole('link', { name: 'Card 2' }).click()
+    await expect(page.locator('#card-2')).toBeFocused()
+    await expect.poll(async () => Math.abs((await edges('card-2')).right) <= 1).toBe(true)
+  })
 })
