@@ -156,12 +156,17 @@ test('an AbortSignal stops the scroll', async ({ load, page }) => {
     // not have painted a moving frame yet at any given time.
     const watch = () => (scrollY > 0 ? abort.abort() : requestAnimationFrame(watch))
     requestAnimationFrame(watch)
-    return { arrived: await done, reason, y: scrollY }
+    const arrived = await done
+    const y = scrollY
+    // Two more frames: a cancelled scroll stays where it stopped.
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+    return { arrived, reason, y, after: scrollY }
   })
   expect(result.arrived).toBe(false)
   expect(result.reason).toBe('cancelled')
   expect(result.y).toBeGreaterThan(0)
   expect(result.y).toBeLessThan(1700)
+  expect(result.after).toBe(result.y)
 })
 
 const stacked = `
