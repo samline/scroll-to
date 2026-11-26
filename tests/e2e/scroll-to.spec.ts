@@ -152,7 +152,10 @@ test('an AbortSignal stops the scroll', async ({ load, page }) => {
       signal: abort.signal,
       onEnd: (end: { reason: string }) => (reason = end.reason),
     })
-    setTimeout(() => abort.abort(), 150)
+    // Abort once the scroll has moved, not after a fixed delay: a slow engine may
+    // not have painted a moving frame yet at any given time.
+    const watch = () => (scrollY > 0 ? abort.abort() : requestAnimationFrame(watch))
+    requestAnimationFrame(watch)
     return { arrived: await done, reason, y: scrollY }
   })
   expect(result.arrived).toBe(false)
