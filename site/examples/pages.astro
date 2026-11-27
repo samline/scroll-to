@@ -21,7 +21,7 @@ const easings = [
     </label>
     <button type="button" class="pill" data-next>Next</button>
   </div>
-  <div class="pages-strip" data-preview="pages" tabindex="0" aria-label="Cards">
+  <div class="pages-strip" data-preview="pages" tabindex="0" role="region" aria-label="Cards">
     {Array.from({ length: 12 }, (_, i) => <article>Card {i + 1}</article>)}
   </div>
 </div>
@@ -80,6 +80,7 @@ const easings = [
     display: flex;
     gap: 1rem;
     overflow-x: auto;
+    overscroll-behavior-x: contain;
     padding: 0.75rem;
     border: 0.0625rem solid var(--color-border);
     border-radius: var(--radius-control);

@@ -7,7 +7,7 @@ import './_shared.css'
     <button type="button" class="pill" data-show>Show the answer to question 4</button>
     <output aria-live="polite"></output>
   </div>
-  <div class="box" data-preview="await" tabindex="0" aria-label="Questions">
+  <div class="box" data-preview="await" tabindex="0" role="region" aria-label="Questions">
     {Array.from({ length: 6 }, (_, i) => (
       <article id={`scroll-to-q${i + 1}`}>
         <p class="part-title">Question {i + 1}</p>

@@ -317,12 +317,12 @@ toggle.addEventListener('click', () => {
   </label>
   <button type="button" id="next">Next</button>
 </div>
-<div class="strip" id="strip">
+<div class="strip" id="strip" tabindex="0" role="region" aria-label="Cards">
 ${Array.from({ length: 12 }, (_, i) => `  <article>Card ${i + 1}</article>`).join('\n')}
 </div>`,
       css: `body { font-family: system-ui, sans-serif; }
 .pager { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin-bottom: 0.75rem; }
-.strip { display: flex; gap: 1rem; max-width: 40rem; overflow-x: auto; padding: 0.5rem; border: 1px solid #ddd; }
+.strip { display: flex; gap: 1rem; max-width: 40rem; overflow-x: auto; overscroll-behavior-x: contain; padding: 0.5rem; border: 1px solid #ddd; }
 .strip article { flex: 0 0 12rem; height: 8rem; display: grid; place-items: center; border-radius: 0.5rem; background: #f4ede6; }`,
       js: `const strip = document.querySelector('#strip')
 const easing = document.querySelector('#easing')
@@ -521,7 +521,7 @@ backToTop('.back-to-top', { target: '#top' })`,
   <p class="intro">The shelf is further down. Its cards scroll sideways.</p>
   <section aria-labelledby="shelf-title">
     <h2 id="shelf-title">Shelf</h2>
-    <div class="strip" id="strip" tabindex="0" aria-label="Cards">
+    <div class="strip" id="strip" tabindex="0" role="region" aria-label="Cards">
       <article class="card" id="card-1">Card 1</article>
       <article class="card" id="card-2">Card 2</article>
       <article class="card" id="card-3">Card 3</article>
@@ -542,7 +542,7 @@ html { scroll-padding-top: 4rem; }
 header { position: fixed; inset: 0 0 auto; display: flex; gap: 1rem; align-items: center; height: 3rem; padding: 0 1rem; background: #fff; border-bottom: 1px solid #ddd; }
 main { padding: 4rem 1rem 60vh; }
 .intro { min-height: 120vh; }
-.strip { display: flex; gap: 1rem; max-width: 40rem; overflow-x: auto; padding: 1rem; scroll-snap-type: x mandatory; border: 1px solid #ddd; }
+.strip { display: flex; gap: 1rem; max-width: 40rem; overflow-x: auto; overscroll-behavior-x: contain; padding: 1rem; scroll-snap-type: x mandatory; border: 1px solid #ddd; }
 .card { flex: 0 0 12rem; height: 8rem; padding: 1rem; scroll-snap-align: start; border-radius: 0.5rem; background: #fef3c7; }
 .card:focus { outline: 2px solid #78350f; outline-offset: 2px; }`,
       js: `ScrollTo.auto({ container: 'auto', offset: '#header', inline: 'start', hash: false })

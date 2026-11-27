@@ -3,7 +3,7 @@ import './_shared.css'
 ---
 
 <div class="preview scroll-to-example">
-  <div class="box" data-preview="back-to-top" tabindex="0" aria-label="Long article">
+  <div class="box" data-preview="back-to-top" tabindex="0" role="region" aria-label="Long article">
     {Array.from({ length: 6 }, (_, i) => (
       <section id={i === 0 ? 'scroll-to-article-start' : undefined}>
         <p class="part-title">Page {i + 1}</p>

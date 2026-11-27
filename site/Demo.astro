@@ -37,7 +37,7 @@ const durations = [
       ))}
     </fieldset>
   </div>
-  <div class="box" tabindex="0" aria-label="Scrollable page">
+  <div class="box" tabindex="0" role="region" aria-label="Scrollable page">
     <nav class="bar" aria-label="Sections">
       {parts.map(([title]) => <a href={`#scroll-to-demo-${title.toLowerCase()}`}>{title}</a>)}
     </nav>

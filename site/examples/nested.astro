@@ -9,9 +9,9 @@ import './_shared.css'
     <a href="#scroll-to-card-11" class="pill">Card 11</a>
     <button type="button" class="pill" data-direction aria-pressed="false">Right to left</button>
   </div>
-  <div class="box" data-preview="nested" tabindex="0" aria-label="Page with a shelf">
+  <div class="box" data-preview="nested" tabindex="0" role="region" aria-label="Page with a shelf">
     <div class="intro"><p>The shelf is further down. Its cards scroll sideways.</p></div>
-    <div class="strip" data-strip tabindex="0" aria-label="Cards">
+    <div class="strip" data-strip tabindex="0" role="region" aria-label="Cards">
       {Array.from({ length: 12 }, (_, i) => (
         <article class="card" id={`scroll-to-card-${i + 1}`}>
           <p class="part-title">Card {i + 1}</p>
@@ -84,6 +84,7 @@ import './_shared.css'
     margin: 0 1rem;
     padding: 0.75rem;
     overflow-x: auto;
+    overscroll-behavior-x: contain;
     scroll-snap-type: x mandatory;
     border: 0.0625rem solid var(--color-border);
     border-radius: var(--radius-control);

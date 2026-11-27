@@ -11,7 +11,7 @@ import './_shared.css'
     <output aria-live="polite">Ready</output>
   </div>
   <div class="progress" aria-hidden="true"><span></span></div>
-  <div class="box" data-preview="progress" tabindex="0" aria-label="Long content">
+  <div class="box" data-preview="progress" tabindex="0" role="region" aria-label="Long content">
     {Array.from({ length: 8 }, (_, i) => (
       <section id={`scroll-to-part-${i + 1}`}>
         <p class="part-title">Part {i + 1}</p>
